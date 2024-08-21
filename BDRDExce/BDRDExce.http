@@ -1,0 +1,6 @@
+@BDRDExce_HostAddress = http://localhost:5137
+
+GET {{BDRDExce_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
