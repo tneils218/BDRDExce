@@ -1,3 +1,5 @@
+namespace BDRDExce.Models;
+
 public class Media 
 {
     public string Id { get; set; }

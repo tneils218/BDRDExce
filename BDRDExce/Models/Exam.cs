@@ -1,4 +1,4 @@
-using BDRDExce.Models;
+namespace BDRDExce.Models;
 
 public class Exam
 {
