@@ -1,9 +1,10 @@
 namespace BDRDExce.Infrastuctures;
 
-using Applications.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Models;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext()
     {
@@ -14,29 +15,80 @@ public class AppDbContext : DbContext
 
     }
 
-    public DbSet<Teacher>    Teachers    { get; set; }
-    public DbSet<Student>    Students    { get; set; }
-    public DbSet<Post>       Posts       { get; set; }
-    public DbSet<Submission> Submissions { get; set; }
+    public DbSet<Comment>         Comments         { get; init; }
+    public DbSet<Exam>            Exams            { get; init; }
+    public DbSet<Submission>      Submissions      { get; init; }
+    public DbSet<ExamMedia>       ExamMedias       { get; init; }
+    public DbSet<SubmissionMedia> SubmissionMedias { get; init; }
+    public DbSet<Media>           Medias           { get; init; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        // Thiết lập quan hệ 1-N giữa Teacher và Student
-        modelBuilder.Entity<Teacher>()
-                    .HasMany(t => t.Students)
-                    .WithOne(s => s.Teacher)
-                    .HasForeignKey(s => s.TeacherId);
+        base.OnModelCreating(builder);
+        builder.Entity<AppUser>(entity =>
+        {
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.DOB).HasMaxLength(10);
+            entity.Property(e => e.AvatarUrl).HasMaxLength(255);
+        });
 
-        // Thiết lập quan hệ 1-N giữa Post và Submission
-        modelBuilder.Entity<Post>()
-                    .HasMany(p => p.Submissions)
-                    .WithOne(s => s.Post)
-                    .HasForeignKey(s => s.PostId);
+        builder.Entity<Comment>(entity =>
+        {
+            entity.Property(e => e.Content).HasMaxLength(255);
 
-        // Thiết lập quan hệ 1-N giữa Student và Submission
-        modelBuilder.Entity<Student>()
-                    .HasMany(s => s.Submissions)
-                    .WithOne(sub => sub.Student)
-                    .HasForeignKey(sub => sub.StudentId);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Exam>(entity =>
+        {
+            entity.Property(e => e.Title)
+                  .HasMaxLength(255);
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.Comments)
+                  .WithOne()
+                  .HasForeignKey(e => e.ExamId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.Medias)
+                  .WithMany()
+                  .UsingEntity<ExamMedia>(
+                      l => l.HasOne<Media>().WithMany().HasForeignKey(e => e.MediaId),
+                      r => r.HasOne<Exam>().WithMany().HasForeignKey(e => e.ExamId));
+        });
+
+        builder.Entity<Submission>(entity =>
+        {
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Exam)
+                  .WithMany()
+                  .HasForeignKey(e => e.ExamId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(e => e.Medias)
+                  .WithMany()
+                  .UsingEntity<SubmissionMedia>(
+                      l => l.HasOne<Media>().WithMany().HasForeignKey(e => e.MediaId),
+                      r => r.HasOne<Submission>().WithMany().HasForeignKey(e => e.SubmissionId));
+        });
+
+        builder.Entity<Media>(entity =>
+        {
+            entity.Property(e => e.ContentType).HasMaxLength(100);
+            entity.Property(e => e.ContentName).HasMaxLength(100);
+
+        });
+
     }
 }
