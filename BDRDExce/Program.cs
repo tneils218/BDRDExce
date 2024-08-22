@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DB")));
 builder.Services.AddIdentity<AppUser, IdentityRole>(
-options => {
+options =>
+{
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedAccount = true;
 })
@@ -29,6 +30,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
 
 app.UseAuthorization();
 
