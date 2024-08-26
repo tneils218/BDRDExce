@@ -29,12 +29,14 @@ public class UserController : ControllerBase
         }
 
     }
+
     [HttpGet("{id}")]
     public IActionResult GetUser(string id)
     {
         var user = _userManager.FindByIdAsync(id).Result;
         return Ok(user);
     }
+
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(string id, UserDto updatedUser)
     {
@@ -94,7 +96,6 @@ public class UserController : ControllerBase
             AvatarUrl = userDto.AvatarUrl,
         };
 
-        // Tạo người dùng với một mật khẩu mặc định (hoặc yêu cầu mật khẩu trong DTO)
         var result = await _userManager.CreateAsync(user, userDto.Password);
 
         if (result.Succeeded)
@@ -102,7 +103,6 @@ public class UserController : ControllerBase
             return Ok(user);
         }
 
-        // Xử lý lỗi nếu có
         return BadRequest(result.Errors);
     }
 }
