@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BDRDExce.Controllers;
 
-[Route("api/v1")]
+[Route("api/v1/auth")]
 [ApiController]
 public class LoginController : ControllerBase
 {
@@ -29,29 +29,60 @@ public class LoginController : ControllerBase
         _configuration = configuration;
         _logger = logger;
     }
-
-    [HttpPost("/login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto loginDto)
     {
         var user = await _userManager.FindByNameAsync(loginDto.Email);
         if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password))
         {
             var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
-            var token = GenerateJwtToken(user);
             if (result.Succeeded)
-                return Ok(new { token });
+            {
+                var tokenDetails = GenerateJwtToken(user);
+                var userDto = new UserDto(user);
+                return Ok(new { token = tokenDetails.Token, expires = new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds(), data = userDto });
+            }
         }
         return BadRequest();
     }
 
-    [HttpPost("/logout")]
+    private (string Token, DateTime Expires) GenerateJwtToken(IdentityUser user)
+    {
+        var claims = new[]
+        {
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+    };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        // Calculate the expiration time
+        var expires = DateTime.Now.AddMinutes(double.Parse(_configuration["Jwt:ExpireMinutes"]));
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: expires,
+            signingCredentials: creds);
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        // Return both the token and the expiration time
+        return (Token: tokenString, Expires: expires);
+    }
+
+
+    [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
         return Ok();
     }
 
-    [HttpPost("/register")]
+    [HttpPost("register")]
     public async Task<IActionResult> Register(UserDto userDto)
     {
         var user = new AppUser
@@ -71,7 +102,7 @@ public class LoginController : ControllerBase
         return BadRequest(result.Errors);
     }
 
-    [HttpPost("/change-password")]
+    [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
     {
         var user = await _signInManager.UserManager.FindByEmailAsync(changePasswordDto.Email);
@@ -87,7 +118,7 @@ public class LoginController : ControllerBase
         return BadRequest(result.Errors);
     }
 
-    [HttpPost("/forgot-password")]
+    [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(BaseLoginDto userDto)
     {
         var user = await _signInManager.UserManager.FindByEmailAsync(userDto.Email);
@@ -98,25 +129,5 @@ public class LoginController : ControllerBase
         var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
         return Ok(token);
     }
-    private string GenerateJwtToken(IdentityUser user)
-    {
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-        };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(double.Parse(_configuration["Jwt:ExpireMinutes"])),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
 }
