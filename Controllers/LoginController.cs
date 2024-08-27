@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BDRDExce.Exceptions;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
@@ -32,18 +33,27 @@ public class LoginController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        var user = await _userManager.FindByNameAsync(loginDto.Email);
-        if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password))
+        try
         {
-            var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
-            if (result.Succeeded)
+            var user = await _userManager.FindByNameAsync(loginDto.Email);
+            if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password))
             {
-                var tokenDetails = GenerateJwtToken(user);
-                var userDto = new UserDto(user);
-                return Ok(new { token = tokenDetails.Token, expires = new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds(), data = userDto });
+                var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
+                if (result.Succeeded)
+                {
+                    var tokenDetails = GenerateJwtToken(user);
+                    var userDto = new UserDto(user, tokenDetails.Token, new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds());
+                    return Ok(new ResponseDto("Ok", userDto));
+                }
             }
+            return Ok(new ResponseDto("Tài khoản hoặc mật khẩu không đúng!!!"));
         }
-        return BadRequest();
+        catch (CustomException ex)
+        {
+            var response = ex.ToResponseDto();
+            return Ok(response);
+        }
+
     }
 
     private (string Token, DateTime Expires) GenerateJwtToken(IdentityUser user)
