@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+using BDRDExce.Infrastructures.Services.Interface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
@@ -7,38 +7,31 @@ namespace BDRDExce.Controllers;
 [ApiController]
 public class RoleController : ControllerBase
 {
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IRoleService _roleService;
 
-    public RoleController(RoleManager<IdentityRole> roleManager)
+    public RoleController(IRoleService roleService)
     {
-        _roleManager = roleManager;
+        _roleService = roleService;
     }
 
     [HttpGet]
-    public IActionResult GetRoles(string roleName)
+    public async Task<IActionResult> GetRoles(string roleName)
     {
-        if (string.IsNullOrWhiteSpace(roleName))
-        {
-            var roles = _roleManager.Roles.ToList();
-            return Ok(roles);
-        }
-        var role = _roleManager.FindByNameAsync(roleName).Result;
-        if (role == null)
+        var roles = await _roleService.GetRolesAsync(roleName);
+        if (!roles.Any())
         {
             return NotFound();
         }
-        return Ok(role);
-
+        return Ok(roles);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateRole(string roleName)
     {
-        var role = new IdentityRole(roleName);
-        var result = await _roleManager.CreateAsync(role);
+        var result = await _roleService.CreateRoleAsync(roleName);
         if (result.Succeeded)
         {
-            return Ok(role);
+            return Ok(new { Message = "Role created successfully", RoleName = roleName });
         }
         return BadRequest(result.Errors);
     }
@@ -46,33 +39,36 @@ public class RoleController : ControllerBase
     [HttpDelete("{roleName}")]
     public async Task<IActionResult> DeleteRole(string roleName)
     {
-        var role = await _roleManager.FindByNameAsync(roleName);
-        if (role == null)
+        try
         {
-            return NotFound();
+            var result = await _roleService.DeleteRoleAsync(roleName);
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Role deleted successfully" });
+            }
+            return BadRequest(result.Errors);
         }
-        var result = await _roleManager.DeleteAsync(role);
-        if (result.Succeeded)
+        catch (Exception ex)
         {
-            return Ok();
+            return NotFound(new { Message = ex.Message });
         }
-        return BadRequest(result.Errors);
     }
 
     [HttpPut("{roleName}")]
     public async Task<IActionResult> UpdateRole(string roleName, string updatedRoleName)
     {
-        var role = await _roleManager.FindByNameAsync(roleName);
-        if (role == null)
+        try
         {
-            return NotFound();
+            var result = await _roleService.UpdateRoleAsync(roleName, updatedRoleName);
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Role updated successfully", UpdatedRoleName = updatedRoleName });
+            }
+            return BadRequest(result.Errors);
         }
-        role.Name = updatedRoleName;
-        var result = await _roleManager.UpdateAsync(role);
-        if (result.Succeeded)
+        catch (Exception ex)
         {
-            return Ok(role);
+            return NotFound(new { Message = ex.Message });
         }
-        return BadRequest(result.Errors);
     }
 }
