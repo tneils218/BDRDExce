@@ -46,16 +46,15 @@ public class LoginController : ControllerBase
                     return Ok(new ResponseDto("Ok", userDto));
                 }
             }
-            return Ok(new ResponseDto("Tài khoản hoặc mật khẩu không đúng!!!"));
+            return BadRequest(new ResponseDto("Tài khoản hoặc mật khẩu không đúng!!!"));
         }
         catch (CustomException ex)
         {
             var response = ex.ToResponseDto();
-            return Ok(response);
+            return BadRequest(response);
         }
 
     }
-
     private (string Token, DateTime Expires) GenerateJwtToken(IdentityUser user)
     {
         var claims = new[]
@@ -63,7 +62,7 @@ public class LoginController : ControllerBase
         new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         new Claim(ClaimTypes.NameIdentifier, user.Id),
-    };
+        };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -93,16 +92,15 @@ public class LoginController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserDto userDto)
+    public async Task<IActionResult> Register(RegisterDto userDto)
     {
         var user = new AppUser
         {
             UserName = userDto.Email,
             Email = userDto.Email,
-            PhoneNumber = userDto.PhoneNumber,
             FullName = userDto.FullName,
-            DOB = userDto.DOB,
-            AvatarUrl = userDto.AvatarUrl,
+            DOB = DateTime.Now.ToString("dd/MM/YYYY"),
+            AvatarUrl = String.Empty
         };
         var result = await _signInManager.UserManager.CreateAsync(user, userDto.Password);
         if (result.Succeeded)
@@ -139,5 +137,4 @@ public class LoginController : ControllerBase
         var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
         return Ok(token);
     }
-
 }

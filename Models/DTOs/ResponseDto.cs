@@ -8,16 +8,14 @@ namespace BDRDExce.Models.DTOs
     public class ResponseDto
 
     {
-        public string Code { get; set; }
+        public string Code { get; set; } = "OK";
         public string Message { get; set; }
         public object Data { get; set; }
         public ResponseDto()
         {
-            Code = "OK";
         }
         public ResponseDto(string message, object data = null)
         {
-            Code = "OK";
             Message = message;
             Data = data;
         }
@@ -29,7 +27,6 @@ namespace BDRDExce.Models.DTOs
         }
         public ResponseDto(object data = null)
         {
-            Code = "OK";
             Message = "Success";
             Data = data;
         }
