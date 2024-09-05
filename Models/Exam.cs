@@ -11,3 +11,4 @@ public class Exam
     public List<Comment> Comments { get; set; }
     public List<Media> Medias { get; set; }
 }
+
