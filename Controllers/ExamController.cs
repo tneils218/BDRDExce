@@ -42,26 +42,41 @@ namespace BDRDExce.Controllers
         public async Task<ActionResult<CreateExamDto>> CreateExam([FromForm] CreateExamDto examDto)
         {
             var medias = new List<Media>();
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+            // Kiểm tra xem thư mục upload có tồn tại không, nếu không thì tạo
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
             // Duyệt qua danh sách các file đã upload
             foreach (var file in examDto.Files)
             {
                 if (file.Length > 0)
                 {
-                    using (var ms = new MemoryStream())
-                    {
-                        await file.CopyToAsync(ms);
-                        var fileBytes = ms.ToArray();
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(uploadPath, fileName);
 
-                        // Tạo đối tượng Media từ tệp tin
-                        var media = new Media
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            ContentType = file.ContentType,
-                            ContentName = file.FileName,
-                            Content = fileBytes
-                        };
-                        medias.Add(media);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
                     }
+
+                    // Tạo URL để truy cập file đã lưu
+                    var fileUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+
+                    // Tạo đối tượng Media từ tệp tin
+                    var media = new Media
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ContentType = file.ContentType,
+                        ContentName = file.FileName,
+                        Content = null,  
+                        FileUrl = fileUrl   
+                    };
+
+                    medias.Add(media);
                 }
             }
 
@@ -118,5 +133,11 @@ namespace BDRDExce.Controllers
                 return NotFound();
             }
         }
+
+        // [HttpGet("{mediaId}")]
+        // public Task<ActionResult<ExamDto>> GetExamByMediaId(string mediaId)
+        // {
+
+        // }
     }
 }

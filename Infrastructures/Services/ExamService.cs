@@ -63,5 +63,11 @@ namespace BDRDExce.Infrastructures.Services
             // Custom logic to retrieve exams by user ID
             return await _dbSet.Where(exam => exam.UserId == userId).ToListAsync();
         }
+
+        public void GetExamByMediaId(string mediaId)
+        {
+            // var exam = await GetAllAsync();
+            // var examByMedia = exam.Where(x => x.Medias.Where(m => m))
+        }
     }
 }

@@ -17,8 +17,15 @@ namespace BDRDExce.Controllers
         [HttpPost]
         public async Task<ActionResult<ExamMedia>> CreateExamMedia(ExamMedia examMedia)
         {
-            var result = await _examMediaService.AddAsync(examMedia);
-            return Ok(result);
+            try
+            {
+                var result = await _examMediaService.AddAsync(examMedia);
+                return Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         [HttpGet]
@@ -28,7 +35,7 @@ namespace BDRDExce.Controllers
             return Ok(result);
         }
 
-        [HttpGet("id")]
+        [HttpGet("{mediaId}/{examId}")]
         public async Task<ActionResult<ExamMedia>> GetExamMediaByExamId(string mediaId, int examId)
         {
             var result = await _examMediaService.GetExamMediaById(examId, mediaId);
@@ -39,7 +46,7 @@ namespace BDRDExce.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteExamMedia(int id)
         {
             try
