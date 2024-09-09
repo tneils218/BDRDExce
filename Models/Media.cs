@@ -6,4 +6,5 @@ public class Media
     public string ContentType { get; set; }
     public string ContentName { get; set; }
     public byte[] Content { get; set; }
+    public string Url { get; set; }
 }

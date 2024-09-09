@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
+using BDRDExce.Models.DTOs;
+using System.Reflection.Metadata.Ecma335;
 
 namespace BDRDExce.Controllers
 {
@@ -16,14 +18,17 @@ namespace BDRDExce.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Exam>>> GetAllExams()
+        public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExams()
         {
             var exams = await _examService.GetAllAsync();
-            return Ok(exams);
+            var examDto = exams.Select(x => {
+                return new ExamDto{Content = x.Content, UserId = x.UserId, Medias = x.Medias};
+            });
+            return Ok(examDto);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Exam>> GetExamById(int id)
+        public async Task<ActionResult<ExamDto>> GetExamById(int id)
         {
             var exam = await _examService.GetByIdAsync(id);
             if (exam == null)
@@ -34,22 +39,63 @@ namespace BDRDExce.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Exam>> CreateExam(Exam exam)
+        public async Task<ActionResult<CreateExamDto>> CreateExam([FromForm] CreateExamDto examDto)
         {
+            var medias = new List<Media>();
+            // Duyệt qua danh sách các file đã upload
+            foreach (var file in examDto.Files)
+            {
+                if (file.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await file.CopyToAsync(ms);
+                        var fileBytes = ms.ToArray();
+
+                        // Tạo đối tượng Media từ tệp tin
+                        var media = new Media
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            ContentType = file.ContentType,
+                            ContentName = file.FileName,
+                            Content = fileBytes
+                        };
+                        medias.Add(media);
+                    }
+                }
+            }
+
+            // Tạo đối tượng Exam
+            var exam = new Exam
+            {
+                Content = examDto.Content,
+                Title = examDto.Title,
+                UserId = examDto.UserId,
+                CreatedAt = DateTime.Now,
+                Medias = medias // Gán danh sách Media đã được xử lý
+            };
+
+            // Lưu exam vào database
             var createdExam = await _examService.AddAsync(exam);
             return CreatedAtAction(nameof(GetExamById), new { id = createdExam.Id }, createdExam);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateExam(int id, Exam exam)
+        public async Task<IActionResult> UpdateExam(int id, ChangeExamDto examDto)
         {
-            if (id != exam.Id)
+            if (id != examDto.Id)
             {
                 return BadRequest();
             }
 
             try
             {
+                var exam = new Exam {
+                    Id = examDto.Id,
+                    Title = examDto.Title,
+                    Content = examDto.Content,
+                    UserId = examDto.UserId
+                };
                 var updatedExam = await _examService.UpdateAsync(exam);
                 return Ok(updatedExam);
             }
