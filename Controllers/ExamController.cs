@@ -45,6 +45,7 @@ namespace BDRDExce.Controllers
             // Duyệt qua danh sách các file đã upload
             foreach (var file in examDto.Files)
             {
+                if(file.)
                 if (file.Length > 0)
                 {
                     using (var ms = new MemoryStream())
