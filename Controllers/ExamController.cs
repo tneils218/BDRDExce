@@ -42,41 +42,27 @@ namespace BDRDExce.Controllers
         public async Task<ActionResult<CreateExamDto>> CreateExam([FromForm] CreateExamDto examDto)
         {
             var medias = new List<Media>();
-            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-
-            // Kiểm tra xem thư mục upload có tồn tại không, nếu không thì tạo
-            if (!Directory.Exists(uploadPath))
-            {
-                Directory.CreateDirectory(uploadPath);
-            }
-
             // Duyệt qua danh sách các file đã upload
             foreach (var file in examDto.Files)
             {
                 if (file.Length > 0)
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var filePath = Path.Combine(uploadPath, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    using (var ms = new MemoryStream())
                     {
-                        await file.CopyToAsync(stream);
+                        await file.CopyToAsync(ms);
+                        var fileBytes = ms.ToArray();
+                        var id = Guid.NewGuid().ToString();
+                        // Tạo đối tượng Media từ tệp tin
+                        var media = new Media
+                        {
+                            Id = id,
+                            ContentType = file.ContentType,
+                            ContentName = file.FileName,
+                            Content = fileBytes,
+                            FileUrl = $"{Request.Scheme}://{Request.Host}/api/v1/Media/{id}"
+                        };
+                        medias.Add(media);
                     }
-
-                    // Tạo URL để truy cập file đã lưu
-                    var fileUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
-
-                    // Tạo đối tượng Media từ tệp tin
-                    var media = new Media
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        ContentType = file.ContentType,
-                        ContentName = file.FileName,
-                        Content = null,  
-                        FileUrl = fileUrl   
-                    };
-
-                    medias.Add(media);
                 }
             }
 
@@ -89,7 +75,6 @@ namespace BDRDExce.Controllers
                 CreatedAt = DateTime.Now,
                 Medias = medias // Gán danh sách Media đã được xử lý
             };
-
             // Lưu exam vào database
             var createdExam = await _examService.AddAsync(exam);
             return CreatedAtAction(nameof(GetExamById), new { id = createdExam.Id }, createdExam);
@@ -134,10 +119,29 @@ namespace BDRDExce.Controllers
             }
         }
 
-        // [HttpGet("{mediaId}")]
-        // public Task<ActionResult<ExamDto>> GetExamByMediaId(string mediaId)
-        // {
 
-        // }
+        // Phương thức để lấy Content-Type của file
+        private string GetContentType(string path)
+        {
+            var types = new Dictionary<string, string>
+            {
+                {".txt", "text/plain"},
+                {".pdf", "application/pdf"},
+                {".doc", "application/vnd.ms-word"},
+                {".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+                {".xls", "application/vnd.ms-excel"},
+                {".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+                {".png", "image/png"},
+                {".jpg", "image/jpeg"},
+                {".jpeg", "image/jpeg"},
+                {".gif", "image/gif"},
+                {".csv", "text/csv"},
+                {".zip", "application/x-compressed"},
+                {".rar", "application/x-rar-compressed"}
+            };
+
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return types.ContainsKey(ext) ? types[ext] : "application/octet-stream";
+        }
     }
 }

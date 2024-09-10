@@ -1,0 +1,72 @@
+@startuml Flow exchange confirm trade order
+title Flow đặt lệnh mua
+ 
+hide footbox
+skinparam ResponseMessageBelowArrow true
+participant "EzTrade" as customer
+participant "OMS \nValidator \nService" as val
+queue "OMS \nUnderlying \nInput \nTopic" as input
+participant "OMS \nMain \nService" as app
+
+queue "Account \nInput \nTopic" as accInput
+participant "Account \nBalance \nService" as balance
+queue "Account \nOutput \nTopic" as accOutput
+queue "Exchange \nGateway \nTopic" as exchange
+participant "Pusher" as pusher
+queue "OMS \nUnderlying \nOutput \nTopic" as tomEv
+participant "OMS \nPersisence \nService" as per
+database "TOMS \nDB" as db
+activate customer
+activate val
+customer --> val : 1. Request đặt lệnh
+alt validate success
+val -> input : 2. Request đặt lệnh
+val --> customer: 3. Tiếp nhận lệnh thành công
+else validate failure
+val --> customer: 4. return error
+deactivate val 
+deactivate customer
+end
+input -> app: 5. Consume đặt lệnh
+activate app
+ 
+app -> app : 6. Tạo log đặt lệnh INPROGESS
+alt validate success
+app -> app : 7. Tạo msg chờ gửi ra queue sở
+app -> accInput : 8. Gửi msg cho bên Account Balance \nxử lý treo số dư
+
+accInput -> balance: 9. Consume msg \nđể xử lý số dư
+activate balance
+balance -> accOutput: 10. Kết quả \nxử lý số dư
+deactivate balance
+
+accOutput -> app : 11. Consume kết quả check \nvà xử lý treo số dư
+alt treo số dư thành công
+activate app
+app -> app: 12. Check mã chứng khoán đó thuộc \nSàn giao dịch nào
+
+app -> exchange: 13. Gửi msg chờ gửi đi Sở
+
+app -> pusher : 14. Gửi pusher success
+else treo số dư thất bại
+app -> app: 15. Update trạng thái lệnh \nREFJECTED do không đủ số dư
+app -> pusher : 16. Gửi pusher eror
+end
+
+
+
+else validate failure
+app -> app : 17. Tạo log REJECTED
+
+app -> pusher : 18. Gửi pusher error
+end
+deactivate app
+
+app -> tomEv : 19. Gửi message
+deactivate app
+activate tomEv
+tomEv ->  per : 20. Consume
+deactivate tomEv
+activate per
+per -> db : 21. Cập nhật
+deactivate per
