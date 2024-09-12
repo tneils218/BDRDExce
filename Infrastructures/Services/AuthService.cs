@@ -34,8 +34,9 @@ public class AuthService : IAuthService
             var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
             if (result.Succeeded)
             {
+                var role = await _userManager.GetRolesAsync(user);
                 var tokenDetails = GenerateJwtToken(user);
-                var userDto = new UserDto(user, tokenDetails.Token, new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds());
+                var userDto = new UserDto(user, tokenDetails.Token, new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds(), role);
                 return userDto;
             }
         }

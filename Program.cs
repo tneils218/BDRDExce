@@ -51,9 +51,7 @@ services.AddScoped<IAuthService, AuthService>();
 services.AddScoped<IRoleService, RoleService>();
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IExamService, ExamService>();
-services.AddScoped<IExamMediaService, ExamMediaService>();
 services.AddScoped<ISubmissionService, SubmissionService>();
-services.AddScoped<ISubmissionMediaService, SubmissionMediaService>();
 services.AddScoped<IMediaService, MediaService>();
 
 var app = builder.Build();

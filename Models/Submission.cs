@@ -8,6 +8,7 @@ public class Submission
     public AppUser     User    { get; set; }
     public string      UserId  { get; set; }
     public List<Media> Medias  { get; set; }
+    public string Label { get; set; }
 
     public Submission()
     {

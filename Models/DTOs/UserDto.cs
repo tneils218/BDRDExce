@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace BDRDExce.Models.DTOs
 {
     public class UserDto : BaseLoginDto
@@ -9,21 +11,23 @@ namespace BDRDExce.Models.DTOs
         public string AvatarUrl { get; set; }
         public string Token { get; set; }
         public long? Expires { get; set; }
+        public IList<string> Role { get; set; }
         public UserDto()
         {
 
         }
 
-        public UserDto(AppUser user)
+        public UserDto(AppUser user, IList<string> role)
         {
             FullName = user.FullName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;
             DOB = user.DOB;
             AvatarUrl = user.AvatarUrl;
+            Role = role;
         }
 
-        public UserDto(AppUser user, string token, long expires)
+        public UserDto(AppUser user, string token, long expires, IList<string> role)
         {
             FullName = user.FullName;
             Email = user.Email;
@@ -32,6 +36,7 @@ namespace BDRDExce.Models.DTOs
             AvatarUrl = user.AvatarUrl;
             Token = token;
             Expires = expires;
+            Role = role;
         }
     }
 

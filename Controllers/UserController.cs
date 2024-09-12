@@ -1,6 +1,7 @@
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
@@ -9,11 +10,16 @@ namespace BDRDExce.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly IUserService _userService;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
     {
         _userService = userService;
+        _roleManager =roleManager;
+        _userManager = userManager;
+
     }
 
     [HttpGet]
@@ -78,7 +84,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> CreateUser(UserDto userDto)
+    public async Task<IActionResult> CreateUser(CreateUserDto userDto)
     {
         var result = await _userService.CreateUserAsync(userDto);
         if (result.Succeeded)
@@ -87,5 +93,19 @@ public class UserController : ControllerBase
         }
 
         return BadRequest(result.Errors);
+    }
+
+    [HttpPost("role")]
+    public async Task<IActionResult> AddRoleToUser(string userId, string roleName)
+    {
+        // Inject UserManager and RoleManager (via constructor or service locator)
+        var result = await _userService.AddRoleToUser(userId, roleName);
+        
+        if (result.Succeeded)
+        {
+            return Ok($"Role '{roleName}' added to user.");
+        }
+        
+        return BadRequest("Failed to add role to user.");
     }
 }

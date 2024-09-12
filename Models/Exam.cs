@@ -10,5 +10,7 @@ public class Exam
     public DateTime CreatedAt { get; set; }
     public List<Comment> Comments { get; set; }
     public List<Media> Medias { get; set; }
+    public List<AppUser> AssignmentUsers { get; set; }
+    public string Label { get; set; }
 }
 
