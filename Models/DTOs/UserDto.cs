@@ -11,6 +11,7 @@ namespace BDRDExce.Models.DTOs
         public string AvatarUrl { get; set; }
         public string Token { get; set; }
         public long? Expires { get; set; }
+        public bool EmailConfirmed { get; set; }
         public IList<string> Role { get; set; }
         public UserDto()
         {
@@ -37,6 +38,7 @@ namespace BDRDExce.Models.DTOs
             Token = token;
             Expires = expires;
             Role = role;
+            EmailConfirmed = user.EmailConfirmed;
         }
     }
 

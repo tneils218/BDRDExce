@@ -15,15 +15,18 @@ public class AuthService : IAuthService
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly IEmailSender _emailSender;
 
     public AuthService(
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IEmailSender emailSender)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _emailSender = emailSender;
     }
 
     public async Task<UserDto> LoginAsync(LoginDto loginDto)
@@ -59,6 +62,8 @@ public class AuthService : IAuthService
             AvatarUrl = String.Empty
         };
         var result = await _signInManager.UserManager.CreateAsync(user, userDto.Password);
+        _emailSender.SendEmailAsync(userDto.Email, "Reset Password",
+                "Please reset your password by clicking here: <a href=''>link</a>");
         return result;
     }
 
@@ -81,6 +86,9 @@ public class AuthService : IAuthService
             throw new CustomException("User not found");
         }
         var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
+        _emailSender.SendEmailAsync(userDto.Email, "Reset Password",
+                "Please reset your password by clicking here: <a href='http://google.com'>link</a>");
+
         return token;
     }
 

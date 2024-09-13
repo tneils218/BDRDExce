@@ -1,8 +1,13 @@
+using System.Security.Cryptography;
+using System.Text;
+using BDRDExce.Commons.Utils;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Controllers;
 
@@ -13,13 +18,16 @@ public class UserController : ControllerBase
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<AppUser> _userManager;
     private readonly IUserService _userService;
+    private readonly IConfiguration _configuration;
+    private readonly string _key ;
 
-    public UserController(IUserService userService, RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager)
+    public UserController(IUserService userService, RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager, IConfiguration configuration)
     {
         _userService = userService;
         _roleManager =roleManager;
         _userManager = userManager;
-
+        _configuration = configuration;
+        _key = _configuration["KeyAes"];
     }
 
     [HttpGet]
@@ -108,4 +116,15 @@ public class UserController : ControllerBase
         
         return BadRequest("Failed to add role to user.");
     }
+
+    [HttpGet("verify")]
+    public async Task<ActionResult> VerifyEmailAsync(string hashCodeEmail)
+    {
+        var result = await _userService.VerifyEmailAsync(hashCodeEmail);
+        if(result.Succeeded)
+        {
+            return Ok("Verify Email Successfully");
+        }
+        return BadRequest("Verify Email Fail!");
+    } 
 }

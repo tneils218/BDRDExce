@@ -1,18 +1,25 @@
+using BDRDExce.Commons.Utils;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services;
 public class UserService : IUserService
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IConfiguration _configuration;
+    private readonly string _key;
 
-    public UserService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+    public UserService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _configuration = configuration;
+        _key = _configuration["KeyAes"];
     }
 
     public async Task<IEnumerable<UserDto>> GetUsersAsync()
@@ -116,5 +123,29 @@ public class UserService : IUserService
         // Add the role to the user
         var result = await _userManager.AddToRoleAsync(user, roleName);
         return result;
+    }
+    
+    public async Task<IdentityResult> VerifyEmailAsync(string emailHashCode)
+    {
+        // Tìm người dùng có hash của email trùng với hashCodeEmail
+        var user = await _userManager.Users
+            .FirstOrDefaultAsync(u => Utils.Decrypt(emailHashCode, _key) == u.Email);
+
+        if (user == null)
+        {
+            throw new Exception("Verification link is invalid or expired.");
+        }
+
+        // Xác nhận email đã được xác thực
+        user.EmailConfirmed = true;
+
+        // Cập nhật thông tin người dùng trong cơ sở dữ liệu
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            return result;
+        }
+        throw new Exception("Email verification failed.");
     }
 }
