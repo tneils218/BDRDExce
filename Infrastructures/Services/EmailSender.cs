@@ -6,13 +6,13 @@ using MimeKit;
 
 namespace BDRDExce.Infrastructures.Services
 {
-    public class EmailSender(IConfiguration configuration) : IEmailSender
+    public class EmailSender(IConfiguration configuration, ILogger<EmailSender> logger) : IEmailSender
     {
         private readonly string _from = configuration["MailSetting:From"];
         private readonly string _host = configuration["MailSetting:Host"];
         private readonly int _port = int.Parse(configuration["MailSetting:Port"]);
         private readonly string _password = configuration["MailSetting:Password"];
-        public void SendEmailAsync(string email, string subject, string body)
+        public void SendEmail(string email, string subject, string body)
         {
             _ = Task.Run(() =>
             {
@@ -21,7 +21,6 @@ namespace BDRDExce.Infrastructures.Services
                 {
                     using (var client = new SmtpClient())
                         {
-                            client.CheckCertificateRevocation = false;
                             client.Connect(_host, _port, SecureSocketOptions.StartTls);
                             client.Authenticate(_from , _password);
                             client.Send(message);
@@ -31,19 +30,17 @@ namespace BDRDExce.Infrastructures.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Send mail fail: {ex.ToString()}");
+                    logger.LogWarning($"Send mail fail: {ex.ToString()}");
                 }
             });
         }
 
         private MimeMessage CreateMailMessage(string email, string subject, string content)
         {
-            var to = Regex.Replace(email, "[\\s]+", "").Split(",").Select(x => x).ToArray();
             var from = _from;
             MimeMessage mimeMessage = new MimeMessage();
             mimeMessage.From.Add(new MailboxAddress(from.Split("@")[0], from));
-            foreach (var t in to)
-                mimeMessage.To.Add(new MailboxAddress(t.Split("@")[0], t));
+            mimeMessage.To.Add(new MailboxAddress(email.Split("@")[0], email));
             mimeMessage.Subject = subject;
             var bodyBuilder = new BodyBuilder();
             bodyBuilder.TextBody = content;

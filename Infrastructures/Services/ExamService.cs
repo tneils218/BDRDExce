@@ -105,11 +105,12 @@ namespace BDRDExce.Infrastructures.Services
                 Title = examDto.Title,
                 UserId = examDto.UserId,
                 CreatedAt = DateTime.UtcNow,
+                Label = examDto.Label,
                 Medias = medias // Gán danh sách Media đã được xử lý
             };
             await _dbSet.AddAsync(exam);
             await _context.SaveChangesAsync();
-            return new ExamDto{UserId = exam.UserId, Content = exam.Content};
+            return new ExamDto{Title = exam.Title, Content = exam.Content, Label = examDto.Label};
         }
     }
 }

@@ -1,7 +1,6 @@
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Infrastructures.Services.Interface
 {

@@ -3,6 +3,7 @@ using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using System.Reflection.Metadata.Ecma335;
+using System.Linq.Expressions;
 
 namespace BDRDExce.Controllers
 {
@@ -23,7 +24,7 @@ namespace BDRDExce.Controllers
         {
             var exams = await _examService.GetAllAsync();
             var examDto = exams.Select(x => {
-                return new ExamDto{Content = x.Content, UserId = x.UserId};
+                return new ExamDto{Content = x.Content, Title = x.Title, Label = x.Label};
             });
             return Ok(examDto);
         }
@@ -36,7 +37,8 @@ namespace BDRDExce.Controllers
             {
                 return NotFound();
             }
-            return Ok(exam);
+            var examDto = new ExamDto{Content = exam.Content, Title = exam.Title, Label = exam.Label};
+            return Ok(examDto);
         }
 
         [HttpPost]

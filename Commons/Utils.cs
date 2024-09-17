@@ -4,32 +4,6 @@ using System.Text;
 namespace BDRDExce.Commons.Utils;
 
 public static class Utils {
-    public static string ComputeSha256Hash(string text)
-    {
-        UnicodeEncoding ue = new UnicodeEncoding();
-        byte[] hashValue;
-        //byte[] message = ue.GetBytes("NYRR" + text + "RRYN");
-        byte[] message = ue.GetBytes(text.Length * 2 + text + text.Length * 2);
-
-        SHA256Managed hashString = new SHA256Managed();
-        string hex = "";
-
-        hashValue = hashString.ComputeHash(message);
-        foreach (byte x in hashValue)
-        {
-            hex += String.Format("{0:x2}", x);
-        }
-        // Tạo mảng byte từ chuỗi thập lục phân
-        byte[] bytes = new byte[hex.Length / 2];
-        for (int i = 0; i < hex.Length; i += 2)
-        {
-            // Chuyển đổi từng cặp ký tự hex thành byte
-            bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-        }
-
-        // Chuyển mảng byte thành chuỗi Unicode
-        return Encoding.UTF8.GetString(bytes);
-    }
 
     public static string Decrypt(string cipherText, string key)
         {

@@ -4,6 +4,7 @@ namespace BDRDExce.Models.DTOs
 {
     public class UserDto : BaseLoginDto
     {
+        public string Id { get; set; }
         public string FullName { get; set; }
         public string Password { get; set; }
         public string PhoneNumber { get; set; }
@@ -20,6 +21,7 @@ namespace BDRDExce.Models.DTOs
 
         public UserDto(AppUser user, IList<string> role)
         {
+            Id = user.Id;
             FullName = user.FullName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;
