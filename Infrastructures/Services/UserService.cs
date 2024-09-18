@@ -141,9 +141,11 @@ public class UserService : IUserService
     
     public async Task<IdentityResult> VerifyEmailAsync(string emailHashCode)
     {
+        // Giải mã emailHashCode -> Email
+        var decryptedEmail = Utils.Decrypt(emailHashCode, _key);
         // Tìm người dùng có hash của email trùng với hashCodeEmail
         var user = await _userManager.Users
-            .FirstOrDefaultAsync(u => Utils.Decrypt(emailHashCode, _key) == u.Email);
+            .FirstOrDefaultAsync(u => decryptedEmail == u.Email);
 
         if (user == null)
         {

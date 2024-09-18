@@ -37,7 +37,7 @@ namespace BDRDExce.Controllers
             {
                 return NotFound();
             }
-            var examDto = new ExamDto{Content = exam.Content, Title = exam.Title, Label = exam.Label};
+            var examDto = new ExamDto{Id = exam.Id, Content = exam.Content, Title = exam.Title, Label = exam.Label};
             return Ok(examDto);
         }
 

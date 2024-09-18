@@ -10,6 +10,7 @@ namespace BDRDExce.Infrastructures.Services
 {
     public class ExamService : BaseDbService<Exam>, IExamService
     {
+        private readonly string[] _allowedContentTypes = {".jpg", ".png", ".jpeg", ".rar", ".zip"};
         private const long _maxFileSize = 5 * 1024 * 1024;
         public ExamService(AppDbContext context) : base(context)
         {
@@ -90,7 +91,7 @@ namespace BDRDExce.Infrastructures.Services
             var medias = new List<Media>();
             foreach (var file in files)
             {
-                if (file.Length > 0 && file.Length <= _maxFileSize)
+                if (file.Length > 0 && file.Length <= _maxFileSize && _allowedContentTypes.Contains(file.ContentType))
                 {
                     using (var ms = new MemoryStream())
                     {
