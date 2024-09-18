@@ -15,16 +15,19 @@ public class AuthService : IAuthService
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IEmailSender _emailSender;
 
     public AuthService(
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
+        RoleManager<IdentityRole> roleManager,
         IConfiguration configuration,
         IEmailSender emailSender)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _roleManager = roleManager;
         _configuration = configuration;
         _emailSender = emailSender;
     }
@@ -53,15 +56,23 @@ public class AuthService : IAuthService
 
     public async Task<IdentityResult> RegisterAsync(RegisterDto userDto)
     {
+        var role = await _roleManager.FindByNameAsync("Students");
         var user = new AppUser
         {
             UserName = userDto.Email,
             Email = userDto.Email,
             FullName = userDto.FullName,
             DOB = DateTime.Now.ToString("dd/MM/YYYY"),
-            AvatarUrl = String.Empty
+            AvatarUrl = String.Empty,
+            Role = role.Name
         };
         var result = await _signInManager.UserManager.CreateAsync(user, userDto.Password);
+        if(result.Succeeded)
+        {
+            var resultAddRole = await _userManager.AddToRoleAsync(user, role.Name);
+            if(!resultAddRole.Succeeded)
+                return resultAddRole;
+        }
         _emailSender.SendEmail(userDto.Email, "Reset Password",
                 "Please reset your password by clicking here: <a href=''>link</a>");
         return result;

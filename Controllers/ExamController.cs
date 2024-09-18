@@ -24,7 +24,7 @@ namespace BDRDExce.Controllers
         {
             var exams = await _examService.GetAllAsync();
             var examDto = exams.Select(x => {
-                return new ExamDto{Content = x.Content, Title = x.Title, Label = x.Label};
+                return new ExamDto{Id = x.Id, Content = x.Content, Title = x.Title, Label = x.Label};
             });
             return Ok(examDto);
         }
@@ -69,7 +69,7 @@ namespace BDRDExce.Controllers
                     Id = examDto.Id,
                     Title = examDto.Title,
                     Content = examDto.Content,
-                    UserId = examDto.UserId
+                    Label = examDto.Label
                 };
                 var updatedExam = await _examService.UpdateAsync(exam);
                 return Ok(updatedExam);

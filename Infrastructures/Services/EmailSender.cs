@@ -12,6 +12,7 @@ namespace BDRDExce.Infrastructures.Services
         private readonly string _host = configuration["MailSetting:Host"];
         private readonly int _port = int.Parse(configuration["MailSetting:Port"]);
         private readonly string _password = configuration["MailSetting:Password"];
+        private const string EmailAddressSeparator = "@";
         public void SendEmail(string email, string subject, string body)
         {
             _ = Task.Run(() =>
@@ -39,8 +40,8 @@ namespace BDRDExce.Infrastructures.Services
         {
             var from = _from;
             MimeMessage mimeMessage = new MimeMessage();
-            mimeMessage.From.Add(new MailboxAddress(from.Split("@")[0], from));
-            mimeMessage.To.Add(new MailboxAddress(email.Split("@")[0], email));
+            mimeMessage.From.Add(new MailboxAddress(from.Split(EmailAddressSeparator)[0], from));
+            mimeMessage.To.Add(new MailboxAddress(email.Split(EmailAddressSeparator)[0], email));
             mimeMessage.Subject = subject;
             var bodyBuilder = new BodyBuilder();
             bodyBuilder.TextBody = content;

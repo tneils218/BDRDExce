@@ -40,7 +40,7 @@ namespace BDRDExce.Infrastructures.Services
 
             existingExam.Title = exam.Title;
             existingExam.Content = exam.Content;
-            existingExam.UserId = exam.UserId;
+            existingExam.Label = exam.Label;
 
             return await base.UpdateAsync(existingExam);
         }
@@ -70,47 +70,46 @@ namespace BDRDExce.Infrastructures.Services
 
         public async Task<ExamDto> AddExam(CreateExamDto examDto, HttpRequest request)
         {
-            var medias = new List<Media>();
-            // Duyệt qua danh sách các file đã upload
-            if(examDto.Files != null)
-            {
-                foreach (var file in examDto.Files)
+            var medias = await ProcessUploadedFiles(examDto.Files, request);
+            var exam = new Exam
                 {
-                    if (file.Length > 0 && file.Length <= _maxFileSize)
+                    Content = examDto.Content,
+                    Title = examDto.Title,
+                    UserId = examDto.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    Medias = medias,
+                    Label = examDto.Label
+                };
+                await _dbSet.AddAsync(exam);
+                await _context.SaveChangesAsync();
+                return new ExamDto{Title = exam.Title, Content = exam.Content, Label = exam.Label};
+        }
+
+        private async Task<List<Media>> ProcessUploadedFiles(List<IFormFile> files, HttpRequest request)
+        {
+            var medias = new List<Media>();
+            foreach (var file in files)
+            {
+                if (file.Length > 0 && file.Length <= _maxFileSize)
+                {
+                    using (var ms = new MemoryStream())
                     {
-                        using (var ms = new MemoryStream())
+                        await file.CopyToAsync(ms);
+                        var fileBytes = ms.ToArray();
+                        var id = Guid.NewGuid().ToString();
+                        var media = new Media
                         {
-                            await file.CopyToAsync(ms);
-                            var fileBytes = ms.ToArray();
-                            var id = Guid.NewGuid().ToString();
-                            // Tạo đối tượng Media từ tệp tin
-                            var media = new Media
-                            {
-                                Id = id,
-                                ContentType = file.ContentType,
-                                ContentName = file.FileName,
-                                Content = fileBytes,
-                                FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                            };
-                            medias.Add(media);
-                        }
+                            Id = id,
+                            ContentType = file.ContentType,
+                            ContentName = file.FileName,
+                            Content = fileBytes,
+                            FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
+                        };
+                        medias.Add(media);
                     }
                 }
             }
-
-            // Tạo đối tượng Exam
-            var exam = new Exam
-            {
-                Content = examDto.Content,
-                Title = examDto.Title,
-                UserId = examDto.UserId,
-                CreatedAt = DateTime.UtcNow,
-                Label = examDto.Label,
-                Medias = medias // Gán danh sách Media đã được xử lý
-            };
-            await _dbSet.AddAsync(exam);
-            await _context.SaveChangesAsync();
-            return new ExamDto{Title = exam.Title, Content = exam.Content, Label = examDto.Label};
+            return medias;
         }
     }
 }

@@ -111,17 +111,31 @@ public class UserService : IUserService
         
         if (user == null)
         {
-            throw new Exception("User not found");
+            return IdentityResult.Failed(new IdentityError { Description = "User not found" });
         }
 
         // Check if the role exists, if not, create the role
         if (!await _roleManager.RoleExistsAsync(roleName))
         {
-            throw new Exception("Role not found");
+            return IdentityResult.Failed(new IdentityError { Description = "Role not found" });
         }
 
         // Add the role to the user
         var result = await _userManager.AddToRoleAsync(user, roleName);
+        if(result.Succeeded)
+        {
+            var removeResult = await _userManager.RemoveFromRoleAsync(user, user.Role);
+            if (!removeResult.Succeeded)
+            {
+                return removeResult; // Trả về kết quả nếu loại bỏ vai trò cũ thất bại
+            }
+            user.Role = roleName;
+            var updateResult = await _userManager.UpdateAsync(user);
+            if(!updateResult.Succeeded)
+            {
+                return updateResult;
+            }
+        }
         return result;
     }
     
@@ -133,7 +147,12 @@ public class UserService : IUserService
 
         if (user == null)
         {
-            throw new Exception("Verification link is invalid or expired.");
+            return IdentityResult.Failed(new IdentityError { Description = "Verification link is invalid or expired." });
+        }
+        if (user.EmailConfirmed)
+        {
+            // Email is already verified, no need to update the user
+            return IdentityResult.Success;
         }
 
         // Xác nhận email đã được xác thực
