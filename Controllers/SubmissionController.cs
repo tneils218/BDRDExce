@@ -1,6 +1,8 @@
+using System.Runtime.CompilerServices;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers
@@ -15,6 +17,7 @@ namespace BDRDExce.Controllers
             _submissionService = submissionService;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult> CreateSubmission(CreateSubmissionDto submissionDto)
         {
@@ -28,6 +31,7 @@ namespace BDRDExce.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpDelete]
         public async Task<ActionResult> DeleteSubmission(int id)
         {
@@ -42,6 +46,7 @@ namespace BDRDExce.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetAllSubmission()
         {
@@ -49,6 +54,7 @@ namespace BDRDExce.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpGet("id")]
         public async Task<ActionResult<SubmissionDto>> GetSubmissionById(int id)
         {

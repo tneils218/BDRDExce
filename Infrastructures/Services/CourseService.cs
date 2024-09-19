@@ -8,8 +8,7 @@ namespace BDRDExce.Infrastructures.Services
 {
     public class CourseService : BaseDbService<Course>, ICourseService
     {
-        private readonly string[] _allowedContentTypes = {".jpg", ".png", ".jpeg", ".rar", ".zip"};
-        private const long _maxFileSize = 10 * 1024 * 1024;
+        
         public CourseService(AppDbContext context) : base(context)
         {
         }
@@ -68,47 +67,18 @@ namespace BDRDExce.Infrastructures.Services
 
         public async Task<CourseDto> AddCourse(CreateCourseDto courseDto, HttpRequest request)
         {
-            var medias = await ProcessUploadedFiles(courseDto.Files, request);
             var course = new Course
                 {
-                    Desc = courseDto.Content,
+                    Desc = courseDto.Desc,
                     Title = courseDto.Title,
                     UserId = courseDto.UserId,
                     CreatedAt = DateTime.UtcNow,
-                    Medias = medias,
+                    ImageUrl = courseDto.ImageUrl,
                     Label = courseDto.Label
                 };
                 await _dbSet.AddAsync(course);
                 await _context.SaveChangesAsync();
                 return new CourseDto{Title = course.Title, Label = course.Label};
-        }
-
-        private async Task<List<Media>> ProcessUploadedFiles(List<IFormFile> files, HttpRequest request)
-        {
-            var medias = new List<Media>();
-            foreach (var file in files)
-            {
-                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (file.Length > 0 && file.Length <= _maxFileSize && _allowedContentTypes.Contains(fileExtension))
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await file.CopyToAsync(ms);
-                        var fileBytes = ms.ToArray();
-                        var id = Guid.NewGuid().ToString();
-                        var media = new Media
-                        {
-                            Id = id,
-                            ContentType = file.ContentType,
-                            ContentName = file.FileName,
-                            Content = fileBytes,
-                            FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                        };
-                        medias.Add(media);
-                    }
-                }
-            }
-            return medias;
         }
 
     }

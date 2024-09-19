@@ -4,6 +4,7 @@ using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using System.Reflection.Metadata.Ecma335;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BDRDExce.Controllers
 {
@@ -12,13 +13,13 @@ namespace BDRDExce.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
-        private const long _maxFileSize = 5 * 1024 * 1024;
 
         public CourseController(ICourseService courseService)
         {
             _courseService = courseService;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses()
         {
@@ -27,13 +28,14 @@ namespace BDRDExce.Controllers
                 var fileMedias = x.Medias.ToList();
                 var files = fileMedias.Select(f => 
                 {
-                    return new BDRDExce.Models.File {Name = f.ContentName, Url = f.FileUrl};
+                    return new Models.File {Name = f.ContentName, Url = f.FileUrl};
                 }).ToList();
-                return new CourseDto{Id = x.Id, Title = x.Title,Files = files , Label = x.Label};
+                return new CourseDto{Id = x.Id, Title = x.Title, Desc = x.Desc,Files = files , Label = x.Label};
             });
             return Ok(courseDto);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<CourseDto>> GetCourseById(int id)
         {
@@ -42,10 +44,11 @@ namespace BDRDExce.Controllers
             {
                 return NotFound();
             }
-            var courseDto = new CourseDto{Id = course.Id, Title = course.Title, Label = course.Label};
+            var courseDto = new CourseDto{Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label};
             return Ok(courseDto);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<CourseDto>> CreateCourse(CreateCourseDto courseDto)
         {
@@ -60,6 +63,7 @@ namespace BDRDExce.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, ChangeCourseDto courseDto)
         {
@@ -84,6 +88,7 @@ namespace BDRDExce.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {

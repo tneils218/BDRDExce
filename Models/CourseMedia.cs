@@ -1,7 +1,7 @@
 namespace BDRDExce.Models;
 
-public class CourseMedia
+public class ExamMedia
 {
     public string MediaId { get; set; }
-    public int    CourseId  { get; set; }
+    public int    ExamId  { get; set; }
 }

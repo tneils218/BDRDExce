@@ -1,4 +1,5 @@
 using BDRDExce.Infrastructures.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers
@@ -13,6 +14,7 @@ namespace BDRDExce.Controllers
             _mediaService = mediaService;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> DownloadFileMedia(string id)
         {

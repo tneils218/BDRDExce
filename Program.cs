@@ -54,6 +54,7 @@ services.AddScoped<ICourseService, CourseService>();
 services.AddScoped<ISubmissionService, SubmissionService>();
 services.AddScoped<IMediaService, MediaService>();
 services.AddScoped<IEmailSender, EmailSender>();
+services.AddScoped<IExamService, ExamService>();
 
 var app = builder.Build();
 

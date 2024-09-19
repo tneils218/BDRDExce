@@ -1,4 +1,5 @@
 using BDRDExce.Infrastructures.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
@@ -14,6 +15,7 @@ public class RoleController : ControllerBase
         _roleService = roleService;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetRoles(string roleName)
     {
@@ -24,6 +26,7 @@ public class RoleController : ControllerBase
         }
         return Ok(roles);
     }
+
 
     [HttpPost]
     public async Task<IActionResult> CreateRole(string roleName)
@@ -36,6 +39,7 @@ public class RoleController : ControllerBase
         return BadRequest(result.Errors);
     }
 
+    [Authorize]
     [HttpDelete("{roleName}")]
     public async Task<IActionResult> DeleteRole(string roleName)
     {
@@ -54,6 +58,7 @@ public class RoleController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{roleName}")]
     public async Task<IActionResult> UpdateRole(string roleName, string updatedRoleName)
     {
