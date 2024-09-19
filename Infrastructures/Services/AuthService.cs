@@ -42,7 +42,7 @@ public class AuthService : IAuthService
             {
                 var role = await _userManager.GetRolesAsync(user);
                 var tokenDetails = GenerateJwtToken(user);
-                var userDto = new UserDto(user, tokenDetails.Token, new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds(), role);
+                var userDto = new UserDto(user, tokenDetails.Token, new DateTimeOffset(tokenDetails.Expires).ToUnixTimeMilliseconds(), role.FirstOrDefault());
                 return userDto;
             }
         }

@@ -102,21 +102,6 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.AssignmentUser", b =>
-                {
-                    b.Property<int>("ExamId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("ExamId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserExams");
-                });
-
             modelBuilder.Entity("BDRDExce.Models.Comment", b =>
                 {
                     b.Property<long>("Id")
@@ -129,7 +114,7 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("ExamId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")
@@ -143,14 +128,14 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExamId");
+                    b.HasIndex("CourseId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.Exam", b =>
+            modelBuilder.Entity("BDRDExce.Models.Course", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -158,11 +143,14 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Content")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Desc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
 
                     b.Property<string>("Label")
                         .HasMaxLength(100)
@@ -179,22 +167,50 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Exams");
+                    b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.ExamMedia", b =>
+            modelBuilder.Entity("BDRDExce.Models.CourseMedia", b =>
                 {
-                    b.Property<int>("ExamId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("integer");
 
                     b.Property<string>("MediaId")
                         .HasColumnType("text");
 
-                    b.HasKey("ExamId", "MediaId");
+                    b.HasKey("CourseId", "MediaId");
 
                     b.HasIndex("MediaId");
 
-                    b.ToTable("ExamMedias");
+                    b.ToTable("CourseMedias");
+                });
+
+            modelBuilder.Entity("BDRDExce.Models.Exam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsComplete")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("Exams");
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Media", b =>
@@ -232,7 +248,7 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
-                    b.Property<int>("ExamId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Label")
@@ -244,7 +260,7 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExamId");
+                    b.HasIndex("CourseId");
 
                     b.HasIndex("UserId");
 
@@ -398,26 +414,11 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.AssignmentUser", b =>
-                {
-                    b.HasOne("BDRDExce.Models.Exam", null)
-                        .WithMany()
-                        .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BDRDExce.Models.AppUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("BDRDExce.Models.Comment", b =>
                 {
-                    b.HasOne("BDRDExce.Models.Exam", null)
+                    b.HasOne("BDRDExce.Models.Course", null)
                         .WithMany("Comments")
-                        .HasForeignKey("ExamId")
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -429,7 +430,7 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.Exam", b =>
+            modelBuilder.Entity("BDRDExce.Models.Course", b =>
                 {
                     b.HasOne("BDRDExce.Models.AppUser", "User")
                         .WithMany()
@@ -439,11 +440,11 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.ExamMedia", b =>
+            modelBuilder.Entity("BDRDExce.Models.CourseMedia", b =>
                 {
-                    b.HasOne("BDRDExce.Models.Exam", null)
+                    b.HasOne("BDRDExce.Models.Course", null)
                         .WithMany()
-                        .HasForeignKey("ExamId")
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -454,11 +455,22 @@ namespace BDRDExce.Infrastructures.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BDRDExce.Models.Exam", b =>
+                {
+                    b.HasOne("BDRDExce.Models.Course", "Course")
+                        .WithMany("Exams")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("BDRDExce.Models.Submission", b =>
                 {
-                    b.HasOne("BDRDExce.Models.Exam", "Exam")
+                    b.HasOne("BDRDExce.Models.Course", "Course")
                         .WithMany()
-                        .HasForeignKey("ExamId")
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -467,7 +479,7 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Exam");
+                    b.Navigation("Course");
 
                     b.Navigation("User");
                 });
@@ -538,9 +550,11 @@ namespace BDRDExce.Infrastructures.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("BDRDExce.Models.Exam", b =>
+            modelBuilder.Entity("BDRDExce.Models.Course", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Exams");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,6 @@
 namespace BDRDExce.Models.DTOs
 {
-    public class CreateExamDto
+    public class CreateCourseDto
     {
         public string Title { get; set; }
         public string Content { get; set; }

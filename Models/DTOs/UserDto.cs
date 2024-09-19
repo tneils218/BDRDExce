@@ -13,13 +13,13 @@ namespace BDRDExce.Models.DTOs
         public string Token { get; set; }
         public long? Expires { get; set; }
         public bool EmailConfirmed { get; set; }
-        public IList<string> Role { get; set; }
+        public string Role { get; set; }
         public UserDto()
         {
 
         }
 
-        public UserDto(AppUser user, IList<string> role)
+        public UserDto(AppUser user, string role)
         {
             Id = user.Id;
             FullName = user.FullName;
@@ -30,7 +30,7 @@ namespace BDRDExce.Models.DTOs
             Role = role;
         }
 
-        public UserDto(AppUser user, string token, long expires, IList<string> role)
+        public UserDto(AppUser user, string token, long expires, string role)
         {
             FullName = user.FullName;
             Email = user.Email;

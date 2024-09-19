@@ -21,7 +21,7 @@ namespace BDRDExce.Controllers
             var submission = new Submission
             {
                 Content = submissionDto.Content,
-                ExamId = submissionDto.ExamId,
+                CourseId = submissionDto.ExamId,
                 UserId = submissionDto.UserId
             };
             var result = await _submissionService.AddAsync(submission);

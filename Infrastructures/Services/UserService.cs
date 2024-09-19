@@ -33,7 +33,7 @@ public class UserService : IUserService
         var roles = await _userManager.GetRolesAsync(user);
 
         // Tạo đối tượng ViewModel để chứa thông tin người dùng và vai trò
-        var userWithRoles = new UserDto(user, roles);
+        var userWithRoles = new UserDto(user, roles.FirstOrDefault());
 
         userRolesList.Add(userWithRoles);
     }
@@ -119,7 +119,6 @@ public class UserService : IUserService
         {
             return IdentityResult.Failed(new IdentityError { Description = "Role not found" });
         }
-
         // Add the role to the user
         var result = await _userManager.AddToRoleAsync(user, roleName);
         if(result.Succeeded)
@@ -162,11 +161,6 @@ public class UserService : IUserService
 
         // Cập nhật thông tin người dùng trong cơ sở dữ liệu
         var result = await _userManager.UpdateAsync(user);
-
-        if (result.Succeeded)
-        {
-            return result;
-        }
-        throw new Exception("Email verification failed.");
+        return result;
     }
 }

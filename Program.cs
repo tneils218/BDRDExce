@@ -50,7 +50,7 @@ services.AddSwaggerGen();
 services.AddScoped<IAuthService, AuthService>();
 services.AddScoped<IRoleService, RoleService>();
 services.AddScoped<IUserService, UserService>();
-services.AddScoped<IExamService, ExamService>();
+services.AddScoped<ICourseService, CourseService>();
 services.AddScoped<ISubmissionService, SubmissionService>();
 services.AddScoped<IMediaService, MediaService>();
 services.AddScoped<IEmailSender, EmailSender>();
