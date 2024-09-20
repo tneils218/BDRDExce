@@ -58,12 +58,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .WithOne()
                   .HasForeignKey(e => e.CourseId)
                   .OnDelete(DeleteBehavior.Cascade);
- 
-            // entity.HasMany(e => e.Medias)
-            //       .WithMany()
-            //       .UsingEntity<CourseMedia>(
-            //           l => l.HasOne<Media>().WithMany().HasForeignKey(e => e.MediaId),
-            //           r => r.HasOne<Course>().WithMany().HasForeignKey(e => e.CourseId));
+
             entity.Property(e => e.Label).HasMaxLength(100);
         });
  
@@ -74,9 +69,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
  
-            entity.HasOne(e => e.Course)
+            entity.HasOne(e => e.Exam)
                   .WithMany()
-                  .HasForeignKey(e => e.CourseId)
+                  .HasForeignKey(e => e.ExamId)
                   .OnDelete(DeleteBehavior.Cascade);
  
             entity.HasMany(e => e.Medias)

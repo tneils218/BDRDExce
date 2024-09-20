@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class MediaController : ControllerBase
@@ -14,7 +15,6 @@ namespace BDRDExce.Controllers
             _mediaService = mediaService;
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> DownloadFileMedia(string id)
         {

@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
-using System.Reflection.Metadata.Ecma335;
-using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BDRDExce.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class CourseController : ControllerBase
@@ -19,7 +18,6 @@ namespace BDRDExce.Controllers
             _courseService = courseService;
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses()
         {
@@ -35,7 +33,6 @@ namespace BDRDExce.Controllers
             return Ok(courseDto);
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<CourseDto>> GetCourseById(int id)
         {
@@ -48,7 +45,6 @@ namespace BDRDExce.Controllers
             return Ok(courseDto);
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<ActionResult<CourseDto>> CreateCourse(CreateCourseDto courseDto)
         {
@@ -63,7 +59,6 @@ namespace BDRDExce.Controllers
             }
         }
 
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, ChangeCourseDto courseDto)
         {
@@ -88,7 +83,6 @@ namespace BDRDExce.Controllers
             }
         }
 
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {

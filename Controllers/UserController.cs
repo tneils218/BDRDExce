@@ -1,17 +1,13 @@
-using System.Security.Cryptography;
-using System.Text;
-using BDRDExce.Commons.Utils;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Controllers;
 
+[Authorize]
 [Route("api/v1/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
@@ -31,7 +27,6 @@ public class UserController : ControllerBase
         _key = _configuration["KeyAes"];
     }
 
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
@@ -46,7 +41,6 @@ public class UserController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(string id)
     {
@@ -58,7 +52,6 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(string id, UserDto updatedUser)
     {
@@ -77,7 +70,6 @@ public class UserController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(string id)
     {
@@ -96,7 +88,6 @@ public class UserController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpPost("create")]
     public async Task<IActionResult> CreateUser(CreateUserDto userDto)
     {
@@ -109,7 +100,6 @@ public class UserController : ControllerBase
         return BadRequest(result.Errors);
     }
 
-    [Authorize]
     [HttpPost("role")]
     public async Task<IActionResult> AddRoleToUser(string userId, string roleName)
     {
@@ -124,7 +114,6 @@ public class UserController : ControllerBase
         return BadRequest("Failed to add role to user.");
     }
 
-    [Authorize]
     [HttpGet("verify")]
     public async Task<ActionResult> VerifyEmailAsync(string hashCodeEmail)
     {

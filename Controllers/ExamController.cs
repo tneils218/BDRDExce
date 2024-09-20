@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/v1/[controller]")]
 public class ExamController : ControllerBase
@@ -15,7 +16,6 @@ public class ExamController : ControllerBase
         _examService = examService;
     }
 
-    [Authorize]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExam()
     {
@@ -23,7 +23,6 @@ public class ExamController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ExamDto>> AddExam(CreateExamDto createExamDto)
     {
@@ -31,7 +30,6 @@ public class ExamController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize]
     [HttpGet("courseId")]
     public async Task<ActionResult<IEnumerable<ExamDto>>> GetExamByCourseId(int courseId)
     {

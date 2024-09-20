@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class SubmissionController : ControllerBase
@@ -17,21 +18,30 @@ namespace BDRDExce.Controllers
             _submissionService = submissionService;
         }
 
-        [Authorize]
-        [HttpPost]
         public async Task<ActionResult> CreateSubmission(CreateSubmissionDto submissionDto)
         {
             var submission = new Submission
             {
-                Content = submissionDto.Content,
-                CourseId = submissionDto.ExamId,
+                ExamId = submissionDto.ExamId,
                 UserId = submissionDto.UserId
             };
+            if(submissionDto.Content != null)
+            {
+                submission.Content = submissionDto.Content;
+            }
+            if(submissionDto.File != null)
+            {
+                using(var ms = new MemoryStream())
+                {
+                    await submissionDto.File.CopyToAsync(ms);
+                    var fileToBase64 = Convert.ToBase64String(ms.ToArray());
+                    submission.Content = fileToBase64;
+                }
+            }
             var result = await _submissionService.AddAsync(submission);
             return Ok(result);
         }
 
-        [Authorize]
         [HttpDelete]
         public async Task<ActionResult> DeleteSubmission(int id)
         {
@@ -46,7 +56,6 @@ namespace BDRDExce.Controllers
             }
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetAllSubmission()
         {
@@ -54,7 +63,6 @@ namespace BDRDExce.Controllers
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("id")]
         public async Task<ActionResult<SubmissionDto>> GetSubmissionById(int id)
         {
