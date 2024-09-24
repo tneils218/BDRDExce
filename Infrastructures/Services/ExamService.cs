@@ -16,7 +16,11 @@ public class ExamService : BaseDbService<Exam>, IExamService
 
     public async Task<ExamDto> AddExam(CreateExamDto createExamDto, HttpRequest request)
     {
-        var medias = await ProcessUploadedFiles(createExamDto.Files, request);
+        var medias =new List<Media>();
+        if(createExamDto.Files != null)
+        {
+            medias = await ProcessUploadedFiles(createExamDto.Files, request);
+        }
         var exam = new Exam{
             CourseId = createExamDto.CourseId,
             Content = createExamDto.Content,

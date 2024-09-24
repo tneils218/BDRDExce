@@ -54,10 +54,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
  
-            entity.HasMany(e => e.Comments)
-                  .WithOne()
-                  .HasForeignKey(e => e.CourseId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            
 
             entity.Property(e => e.Label).HasMaxLength(100);
         });
@@ -79,7 +76,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .UsingEntity<SubmissionMedia>(
                       l => l.HasOne<Media>().WithMany().HasForeignKey(e => e.MediaId),
                       r => r.HasOne<Submission>().WithMany().HasForeignKey(e => e.SubmissionId));
-            entity.Property(e => e.Label).HasMaxLength(100);
         });
  
         builder.Entity<Media>(entity =>
@@ -101,6 +97,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .UsingEntity<ExamMedia>(
                       l => l.HasOne<Media>().WithMany().HasForeignKey(e => e.MediaId),
                       r => r.HasOne<Exam>().WithMany().HasForeignKey(e => e.ExamId));
+            entity.HasMany(e => e.Comments)
+                  .WithOne()
+                  .HasForeignKey(e => e.ExamId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
  
     }

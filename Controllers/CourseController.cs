@@ -18,17 +18,13 @@ namespace BDRDExce.Controllers
             _courseService = courseService;
         }
 
+        
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses()
         {
             var courses = await _courseService.GetAllAsync();
             var courseDto = courses.Select(x => {
-                var fileMedias = x.Medias.ToList();
-                var files = fileMedias.Select(f => 
-                {
-                    return new Models.File {Name = f.ContentName, Url = f.FileUrl};
-                }).ToList();
-                return new CourseDto{Id = x.Id, Title = x.Title, Desc = x.Desc,Files = files , Label = x.Label};
+                return new CourseDto{Id = x.Id, Title = x.Title, Desc = x.Desc, Label = x.Label};
             });
             return Ok(courseDto);
         }

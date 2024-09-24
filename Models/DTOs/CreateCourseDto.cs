@@ -7,6 +7,5 @@ namespace BDRDExce.Models.DTOs
         public string UserId { get; set; }
         public string Label { get; set; }
         public string ImageUrl { get; set; }
-        public List<IFormFile> Files { get; set; }
     }
 }

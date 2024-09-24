@@ -114,7 +114,7 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<int>("CourseId")
+                    b.Property<int>("ExamId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")
@@ -128,7 +128,7 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("ExamId");
 
                     b.HasIndex("UserId");
 
@@ -229,15 +229,10 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int?>("CourseId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("FileUrl")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
 
                     b.ToTable("Medias");
                 });
@@ -255,10 +250,6 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     b.Property<int>("ExamId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Label")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");
@@ -421,9 +412,9 @@ namespace BDRDExce.Infrastructures.Migrations
 
             modelBuilder.Entity("BDRDExce.Models.Comment", b =>
                 {
-                    b.HasOne("BDRDExce.Models.Course", null)
+                    b.HasOne("BDRDExce.Models.Exam", null)
                         .WithMany("Comments")
-                        .HasForeignKey("CourseId")
+                        .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -469,13 +460,6 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasForeignKey("MediaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("BDRDExce.Models.Media", b =>
-                {
-                    b.HasOne("BDRDExce.Models.Course", null)
-                        .WithMany("Medias")
-                        .HasForeignKey("CourseId");
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Submission", b =>
@@ -564,11 +548,12 @@ namespace BDRDExce.Infrastructures.Migrations
 
             modelBuilder.Entity("BDRDExce.Models.Course", b =>
                 {
-                    b.Navigation("Comments");
-
                     b.Navigation("Exams");
+                });
 
-                    b.Navigation("Medias");
+            modelBuilder.Entity("BDRDExce.Models.Exam", b =>
+                {
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
 using BDRDExce.Infrastructures.Services.Interface;
-using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,27 +16,10 @@ namespace BDRDExce.Controllers
             _submissionService = submissionService;
         }
 
+        [HttpPost]
         public async Task<ActionResult> CreateSubmission(CreateSubmissionDto submissionDto)
         {
-            var submission = new Submission
-            {
-                ExamId = submissionDto.ExamId,
-                UserId = submissionDto.UserId
-            };
-            if(submissionDto.Content != null)
-            {
-                submission.Content = submissionDto.Content;
-            }
-            if(submissionDto.File != null)
-            {
-                using(var ms = new MemoryStream())
-                {
-                    await submissionDto.File.CopyToAsync(ms);
-                    var fileToBase64 = Convert.ToBase64String(ms.ToArray());
-                    submission.Content = fileToBase64;
-                }
-            }
-            var result = await _submissionService.AddAsync(submission);
+            var result = await _submissionService.AddSubmission(submissionDto, Request);
             return Ok(result);
         }
 

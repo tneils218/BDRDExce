@@ -201,59 +201,6 @@ namespace BDRDExce.Infrastructures.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comments",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Content = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    ImageUrl = table.Column<string>(type: "text", nullable: true),
-                    CourseId = table.Column<int>(type: "integer", nullable: false),
-                    ParentId = table.Column<int>(type: "integer", nullable: true),
-                    UserId = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Comments_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Comments_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CourseMedias",
-                columns: table => new
-                {
-                    MediaId = table.Column<string>(type: "text", nullable: false),
-                    CourseId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CourseMedias", x => new { x.CourseId, x.MediaId });
-                    table.ForeignKey(
-                        name: "FK_CourseMedias_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_CourseMedias_Medias_MediaId",
-                        column: x => x.MediaId,
-                        principalTable: "Medias",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Exams",
                 columns: table => new
                 {
@@ -276,15 +223,67 @@ namespace BDRDExce.Infrastructures.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Content = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    ExamId = table.Column<int>(type: "integer", nullable: false),
+                    ParentId = table.Column<int>(type: "integer", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExamMedias",
+                columns: table => new
+                {
+                    MediaId = table.Column<string>(type: "text", nullable: false),
+                    ExamId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExamMedias", x => new { x.ExamId, x.MediaId });
+                    table.ForeignKey(
+                        name: "FK_ExamMedias_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExamMedias_Medias_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Medias",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Submissions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Content = table.Column<string>(type: "text", nullable: true),
-                    CourseId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: true),
-                    Label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
+                    ExamId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -296,9 +295,9 @@ namespace BDRDExce.Infrastructures.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Submissions_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
+                        name: "FK_Submissions_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -365,9 +364,9 @@ namespace BDRDExce.Infrastructures.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_CourseId",
+                name: "IX_Comments_ExamId",
                 table: "Comments",
-                column: "CourseId");
+                column: "ExamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_UserId",
@@ -375,14 +374,14 @@ namespace BDRDExce.Infrastructures.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CourseMedias_MediaId",
-                table: "CourseMedias",
-                column: "MediaId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Courses_UserId",
                 table: "Courses",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamMedias_MediaId",
+                table: "ExamMedias",
+                column: "MediaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Exams_CourseId",
@@ -395,9 +394,9 @@ namespace BDRDExce.Infrastructures.Migrations
                 column: "SubmissionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Submissions_CourseId",
+                name: "IX_Submissions_ExamId",
                 table: "Submissions",
-                column: "CourseId");
+                column: "ExamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Submissions_UserId",
@@ -427,10 +426,7 @@ namespace BDRDExce.Infrastructures.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
-                name: "CourseMedias");
-
-            migrationBuilder.DropTable(
-                name: "Exams");
+                name: "ExamMedias");
 
             migrationBuilder.DropTable(
                 name: "SubmissionMedias");
@@ -443,6 +439,9 @@ namespace BDRDExce.Infrastructures.Migrations
 
             migrationBuilder.DropTable(
                 name: "Submissions");
+
+            migrationBuilder.DropTable(
+                name: "Exams");
 
             migrationBuilder.DropTable(
                 name: "Courses");

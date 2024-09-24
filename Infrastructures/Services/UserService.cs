@@ -24,21 +24,21 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserDto>> GetUsersAsync()
     {
-           var users = _userManager.Users.ToList();
-    var userRolesList = new List<UserDto>();
+        var users = _userManager.Users.ToList();
+        var userRolesList = new List<UserDto>();
 
-    foreach (var user in users)
-    {
-        // Lấy vai trò của người dùng từ UserManager
-        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var user in users)
+        {
+            // Lấy vai trò của người dùng từ UserManager
+            var roles = await _userManager.GetRolesAsync(user);
 
-        // Tạo đối tượng ViewModel để chứa thông tin người dùng và vai trò
-        var userWithRoles = new UserDto(user, roles.FirstOrDefault());
+            // Tạo đối tượng ViewModel để chứa thông tin người dùng và vai trò
+            var userWithRoles = new UserDto(user, roles.FirstOrDefault());
 
-        userRolesList.Add(userWithRoles);
-    }
+            userRolesList.Add(userWithRoles);
+        }
 
-    return userRolesList;
+        return userRolesList;
     }
 
     public async Task<AppUser> GetUserByIdAsync(string id)

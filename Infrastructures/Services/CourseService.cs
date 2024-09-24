@@ -14,7 +14,7 @@ namespace BDRDExce.Infrastructures.Services
         }
         public override async Task<IEnumerable<Course>> GetAllAsync()
         {
-            return await _dbSet.Include(x => x.Medias).ToListAsync();
+            return await _dbSet.ToListAsync();
         }
 
         public override async Task<Course> GetByIdAsync(object id)
