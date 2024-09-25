@@ -32,6 +32,7 @@ namespace BDRDExce.Models.DTOs
 
         public UserDto(AppUser user, string token, long expires, string role)
         {
+            Id = user.Id;
             FullName = user.FullName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;

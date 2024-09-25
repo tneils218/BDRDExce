@@ -10,16 +10,10 @@ namespace BDRDExce.Infrastructures.Services;
 public class UserService : IUserService
 {
     private readonly UserManager<AppUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly IConfiguration _configuration;
-    private readonly string _key;
 
-    public UserService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+    public UserService(UserManager<AppUser> userManager)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
-        _configuration = configuration;
-        _key = _configuration["KeyAes"];
     }
 
     public async Task<IEnumerable<UserDto>> GetUsersAsync()
@@ -81,86 +75,5 @@ public class UserService : IUserService
         }
 
         return await _userManager.DeleteAsync(user);
-    }
-
-    public async Task<IdentityResult> CreateUserAsync(CreateUserDto userDto)
-    {
-        var role = await _roleManager.FindByNameAsync("Students");
-        var user = new AppUser
-        {
-            UserName = userDto.Email,
-            Email = userDto.Email,
-            PhoneNumber = userDto.PhoneNumber,
-            FullName = userDto.FullName,
-            DOB = userDto.DOB,
-            AvatarUrl = userDto.AvatarUrl,
-            Role = role.Name,
-        };
-
-        var result = await _userManager.CreateAsync(user, userDto.Password);
-        if(result.Succeeded)
-        {
-            result = await _userManager.AddToRoleAsync(user, role.Name);
-        }
-        return result;
-    }
-
-    public async Task<IdentityResult> AddRoleToUser(string userId, string roleName)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        
-        if (user == null)
-        {
-            return IdentityResult.Failed(new IdentityError { Description = "User not found" });
-        }
-
-        // Check if the role exists, if not, create the role
-        if (!await _roleManager.RoleExistsAsync(roleName))
-        {
-            return IdentityResult.Failed(new IdentityError { Description = "Role not found" });
-        }
-        // Add the role to the user
-        var result = await _userManager.AddToRoleAsync(user, roleName);
-        if(result.Succeeded)
-        {
-            var removeResult = await _userManager.RemoveFromRoleAsync(user, user.Role);
-            if (!removeResult.Succeeded)
-            {
-                return removeResult; // Trả về kết quả nếu loại bỏ vai trò cũ thất bại
-            }
-            user.Role = roleName;
-            var updateResult = await _userManager.UpdateAsync(user);
-            if(!updateResult.Succeeded)
-            {
-                return updateResult;
-            }
-        }
-        return result;
-    }
-    
-    public async Task<IdentityResult> VerifyEmailAsync(string emailHashCode)
-    {
-        // Giải mã emailHashCode -> Email
-        var decryptedEmail = Utils.Decrypt(emailHashCode, _key);
-        // Tìm người dùng có hash của email trùng với hashCodeEmail
-        var user = await _userManager.Users
-            .FirstOrDefaultAsync(u => decryptedEmail == u.Email);
-
-        if (user == null)
-        {
-            return IdentityResult.Failed(new IdentityError { Description = "Verification link is invalid or expired." });
-        }
-        if (user.EmailConfirmed)
-        {
-            // Email is already verified, no need to update the user
-            return IdentityResult.Success;
-        }
-
-        // Xác nhận email đã được xác thực
-        user.EmailConfirmed = true;
-
-        // Cập nhật thông tin người dùng trong cơ sở dữ liệu
-        var result = await _userManager.UpdateAsync(user);
-        return result;
     }
 }

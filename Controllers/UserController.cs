@@ -1,8 +1,6 @@
 using BDRDExce.Infrastructures.Services.Interface;
-using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
@@ -12,19 +10,11 @@ namespace BDRDExce.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly UserManager<AppUser> _userManager;
     private readonly IUserService _userService;
-    private readonly IConfiguration _configuration;
-    private readonly string _key ;
 
-    public UserController(IUserService userService, RoleManager<IdentityRole> roleManager, UserManager<AppUser> userManager, IConfiguration configuration)
+    public UserController(IUserService userService)
     {
         _userService = userService;
-        _roleManager =roleManager;
-        _userManager = userManager;
-        _configuration = configuration;
-        _key = _configuration["KeyAes"];
     }
 
     [HttpGet]
@@ -32,6 +22,7 @@ public class UserController : ControllerBase
     {
         try
         {
+            var userEmail = User.Identity.Name;
             var users = await _userService.GetUsersAsync();
             return Ok(users);
         }
@@ -87,41 +78,4 @@ public class UserController : ControllerBase
             return NotFound(new { Message = ex.Message });
         }
     }
-
-    [HttpPost("create")]
-    public async Task<IActionResult> CreateUser(CreateUserDto userDto)
-    {
-        var result = await _userService.CreateUserAsync(userDto);
-        if (result.Succeeded)
-        {
-            return Ok(userDto);
-        }
-
-        return BadRequest(result.Errors);
-    }
-
-    [HttpPost("role")]
-    public async Task<IActionResult> AddRoleToUser(string userId, string roleName)
-    {
-        // Inject UserManager and RoleManager (via constructor or service locator)
-        var result = await _userService.AddRoleToUser(userId, roleName);
-        
-        if (result.Succeeded)
-        {
-            return Ok($"Role '{roleName}' added to user.");
-        }
-        
-        return BadRequest("Failed to add role to user.");
-    }
-
-    [HttpGet("verify")]
-    public async Task<ActionResult> VerifyEmailAsync(string hashCodeEmail)
-    {
-        var result = await _userService.VerifyEmailAsync(hashCodeEmail);
-        if(result.Succeeded)
-        {
-            return Ok("Verify Email Successfully");
-        }
-        return BadRequest("Verify Email Fail!");
-    } 
 }

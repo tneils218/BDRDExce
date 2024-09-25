@@ -10,8 +10,5 @@ namespace BDRDExce.Infrastructures.Services.Interface
         Task<AppUser> GetUserByIdAsync(string id);
         Task<IdentityResult> UpdateUserAsync(string id, UserDto updatedUser);
         Task<IdentityResult> DeleteUserAsync(string id);
-        Task<IdentityResult> CreateUserAsync(CreateUserDto userDto);
-        Task<IdentityResult> AddRoleToUser(string userId, string roleName);
-        Task<IdentityResult> VerifyEmailAsync(string emailHashCode);
     }
 }

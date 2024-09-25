@@ -14,12 +14,13 @@ namespace BDRDExce.Infrastructures.Services
         }
         public override async Task<IEnumerable<Course>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.Include(x => x.Exams).ToListAsync();
         }
 
         public override async Task<Course> GetByIdAsync(object id)
         {
-            return await base.GetByIdAsync(id);
+            var result = await _dbSet.Include(x => x.Exams).FirstOrDefaultAsync(x => x.Id == (int)id);
+            return result;
         }
 
         public override async Task<Course> AddAsync(Course course)
@@ -80,6 +81,5 @@ namespace BDRDExce.Infrastructures.Services
                 await _context.SaveChangesAsync();
                 return new CourseDto{Title = course.Title, Label = course.Label};
         }
-
     }
 }

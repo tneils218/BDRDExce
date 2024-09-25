@@ -10,5 +10,7 @@ namespace BDRDExce.Infrastructures.Services.Interface
         Task<IdentityResult> RegisterAsync(RegisterDto userDto);
         Task<IdentityResult> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
         Task<string> ForgotPasswordAsync(BaseLoginDto userDto);
+        Task<IdentityResult> AddRoleToUser(string userId, string roleName);
+        Task<IdentityResult> VerifyEmailAsync(string emailHashCode);
     }
 }

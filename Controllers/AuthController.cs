@@ -84,4 +84,28 @@ public class AuthController : ControllerBase
             return BadRequest(response);
         }
     }
+    [HttpPost("role")]
+    public async Task<IActionResult> AddRoleToUser(string userId, string roleName)
+    {
+        // Inject UserManager and RoleManager (via constructor or service locator)
+        var result = await _authService.AddRoleToUser(userId, roleName);
+        
+        if (result.Succeeded)
+        {
+            return Ok($"Role '{roleName}' added to user.");
+        }
+        
+        return BadRequest("Failed to add role to user.");
+    }
+
+    [HttpGet("verify")]
+    public async Task<ActionResult> VerifyEmailAsync(string hashCodeEmail)
+    {
+        var result = await _authService.VerifyEmailAsync(hashCodeEmail);
+        if(result.Succeeded)
+        {
+            return Ok("Verify Email Successfully");
+        }
+        return BadRequest("Verify Email Fail!");
+    }
 }
