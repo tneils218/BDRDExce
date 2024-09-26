@@ -8,34 +8,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastructures.Services;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
 services.AddControllers();
 services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DB")));
-services.AddIdentity<AppUser, IdentityRole>(
-options =>
-{
-    options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedAccount = true;
-})
-.AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
-services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
+services.AddCustomIdentity(builder.Configuration)
+.AddEntityFrameworkStores<AppDbContext>();
+services.TryAddScoped<IRoleValidator<IdentityRole>, RoleValidator<IdentityRole>>();
+services.TryAddScoped<RoleManager<IdentityRole>>();
 services.AddCors(options =>
 {
     options.AddPolicy("AllowAnyOrigin",
@@ -48,16 +31,17 @@ services.AddCors(options =>
 });
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen(
-    c => {
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c =>
     {
-        In = ParameterLocation.Header,
-        Description = "Please insert JWT with Bearer into field",
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "Please insert JWT with Bearer into field",
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement {
     {
         new OpenApiSecurityScheme
         {
@@ -70,7 +54,7 @@ services.AddSwaggerGen(
         new string[] { }
     }
     });
-}
+    }
 );
 services.AddScoped<IAuthService, AuthService>();
 services.AddScoped<IRoleService, RoleService>();
@@ -93,7 +77,6 @@ app.UseSwaggerUI(c =>
 });
 // }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

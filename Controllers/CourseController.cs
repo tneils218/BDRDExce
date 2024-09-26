@@ -19,23 +19,25 @@ namespace BDRDExce.Controllers
             _courseService = courseService;
         }
 
-        
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses(string userId)
         {
-            if(userId == null)
+            if (userId == null)
             {
                 var courses = await _courseService.GetAllAsync();
-                var courseDto = courses.Select(x => {
-                    return new CourseDto{Id = x.Id, Title = x.Title, Desc = x.Desc, Label = x.Label, Exams = x.Exams.Select(e => new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete)).ToList()};
+                var courseDto = courses.Select(x =>
+                {
+                    return new CourseDto { Id = x.Id, Title = x.Title, Desc = x.Desc, Label = x.Label, Exams = x.Exams.Select(e => new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete)).ToList() };
                 });
                 return Ok(courseDto);
             }
             else
             {
                 var courses = await _courseService.GetCoursesByUserIdAsync(userId);
-                var courseDto = courses.Select(x => {
-                    return new CourseDto{Id = x.Id, Title = x.Title, Desc = x.Desc, Label = x.Label, Exams = x.Exams.Select(e => new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete)).ToList()};
+                var courseDto = courses.Select(x =>
+                {
+                    return new CourseDto { Id = x.Id, Title = x.Title, Desc = x.Desc, Label = x.Label, Exams = x.Exams.Select(e => new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete)).ToList() };
                 });
                 return Ok(courseDto);
             }
@@ -49,7 +51,7 @@ namespace BDRDExce.Controllers
             {
                 return NotFound();
             }
-            var courseDto = new CourseDto{Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, Exams = course.Exams.Select(e => new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete)).ToList()};
+            var courseDto = new CourseDto { Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, Exams = course.Exams.Select(e => new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete)).ToList() };
             return Ok(courseDto);
         }
 
@@ -61,7 +63,7 @@ namespace BDRDExce.Controllers
                 var result = await _courseService.AddCourse(courseDto, Request);
                 return Ok(result);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.ToString());
             }
@@ -77,7 +79,8 @@ namespace BDRDExce.Controllers
 
             try
             {
-                var course = new Course {
+                var course = new Course
+                {
                     Id = courseDto.Id,
                     Title = courseDto.Title,
                     Label = courseDto.Label

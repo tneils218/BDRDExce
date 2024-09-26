@@ -1,6 +1,8 @@
 using BDRDExce.Exceptions;
 using BDRDExce.Infrastructures.Services.Interface;
+using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
@@ -11,26 +13,19 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly ILogger<AuthController> _logger;
+    private readonly SignInManager<AppUser> _signInManager;
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(SignInManager<AppUser> signInManager, IAuthService authService, ILogger<AuthController> logger)
     {
         _authService = authService;
         _logger = logger;
+        _signInManager = signInManager;
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto loginDto)
+    public async Task Login(LoginDto loginDto)
     {
-        try
-        {
-            var userDto = await _authService.LoginAsync(loginDto);
-            return Ok(new ResponseDto("Login successful!", userDto));
-        }
-        catch (CustomException ex)
-        {
-            var response = ex.ToResponseDto();
-            return BadRequest(response);
-        }
+        await _authService.LoginAsync(loginDto);
     }
 
     [HttpPost("logout")]
@@ -89,12 +84,12 @@ public class AuthController : ControllerBase
     {
         // Inject UserManager and RoleManager (via constructor or service locator)
         var result = await _authService.AddRoleToUser(userId, roleName);
-        
+
         if (result.Succeeded)
         {
             return Ok($"Role '{roleName}' added to user.");
         }
-        
+
         return BadRequest("Failed to add role to user.");
     }
 
@@ -102,7 +97,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult> VerifyEmailAsync(string hashCodeEmail)
     {
         var result = await _authService.VerifyEmailAsync(hashCodeEmail);
-        if(result.Succeeded)
+        if (result.Succeeded)
         {
             return Ok("Verify Email Successfully");
         }
