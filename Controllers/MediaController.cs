@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class MediaController : ControllerBase
@@ -23,7 +22,7 @@ namespace BDRDExce.Controllers
                 return NotFound();
 
             // Trả về file từ database
-            return File(media.Content, media.ContentType, media.ContentName);
+            return File(media.Content, media.ContentType, null);
         }
     }
 }

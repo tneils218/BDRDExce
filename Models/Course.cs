@@ -8,6 +8,7 @@ public class Course
     public AppUser User { get; set; }
     public string UserId { get; set; }
     public string ImageUrl { get; set; }
+    public List<Media> Medias { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<Exam> Exams { get; set; }
     public string Label { get; set; }

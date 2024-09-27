@@ -7,7 +7,7 @@ namespace BDRDExce.Infrastructures.Services.Interface
     {
         Task<SignInResult> LoginAsync(LoginDto loginDto);
         Task LogoutAsync();
-        Task<IdentityResult> RegisterAsync(RegisterDto userDto);
+        Task<IdentityResult> RegisterAsync(RegisterDto userDto, HttpRequest request);
         Task<IdentityResult> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
         Task<string> ForgotPasswordAsync(BaseLoginDto userDto);
         Task<IdentityResult> AddRoleToUser(string userId, string roleName);

@@ -1,10 +1,6 @@
-using System.Text;
 using BDRDExce.Infrastuctures;
-using BDRDExce.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastructures.Services;
 using Microsoft.OpenApi.Models;

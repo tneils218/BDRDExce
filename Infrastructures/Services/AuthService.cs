@@ -38,8 +38,9 @@ public class AuthService : IAuthService
 
     public async Task<SignInResult> LoginAsync(LoginDto loginDto)
     {
-        _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
-        return await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
+        var r = _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+        var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
+        return result;
     }
 
     public async Task LogoutAsync()
@@ -47,8 +48,24 @@ public class AuthService : IAuthService
         await _signInManager.SignOutAsync();
     }
 
-    public async Task<IdentityResult> RegisterAsync(RegisterDto userDto)
+    public async Task<IdentityResult> RegisterAsync(RegisterDto userDto, HttpRequest request)
     {
+        Media media;
+        using (var ms = new MemoryStream())
+            {
+                await userDto.File.CopyToAsync(ms);
+                var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
+                var id = Guid.NewGuid().ToString();
+                media = new Media
+                {
+                    Id = id,
+                    ContentType = userDto.File.ContentType,
+                    ContentName = userDto.File.FileName,
+                    Content = fileBytes,
+                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
+                };
+                
+            }
         var role = await _roleManager.FindByNameAsync("Students");
         var user = new AppUser
         {
@@ -56,8 +73,9 @@ public class AuthService : IAuthService
             Email = userDto.Email,
             FullName = userDto.FullName,
             DOB = DateTime.Now.ToString("dd/MM/yyyy"),
-            AvatarUrl = String.Empty,
-            Role = role.Name
+            AvatarUrl = media.FileUrl,
+            Role = role.Name,
+            Media = media
         };
         var result = await _signInManager.UserManager.CreateAsync(user, userDto.Password);
         if (result.Succeeded)

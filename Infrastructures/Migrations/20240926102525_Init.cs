@@ -185,7 +185,7 @@ namespace BDRDExce.Infrastructures.Migrations
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     Desc = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
-                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    MediaId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
                 },
@@ -196,6 +196,12 @@ namespace BDRDExce.Infrastructures.Migrations
                         name: "FK_Courses_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Courses_Medias_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Medias",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -374,6 +380,12 @@ namespace BDRDExce.Infrastructures.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Courses_MediaId",
+                table: "Courses",
+                column: "MediaId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Courses_UserId",
                 table: "Courses",
                 column: "UserId");
@@ -435,9 +447,6 @@ namespace BDRDExce.Infrastructures.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Medias");
-
-            migrationBuilder.DropTable(
                 name: "Submissions");
 
             migrationBuilder.DropTable(
@@ -448,6 +457,9 @@ namespace BDRDExce.Infrastructures.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Medias");
         }
     }
 }

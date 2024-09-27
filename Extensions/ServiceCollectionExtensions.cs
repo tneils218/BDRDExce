@@ -1,7 +1,6 @@
 using System.Text;
 using BDRDExce.AuthenticationHandler;
 using BDRDExce.Models;
-using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -23,8 +22,6 @@ public static class ServiceCollectionExtensions
     options.UseSecurityTokenValidators = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-
-
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,

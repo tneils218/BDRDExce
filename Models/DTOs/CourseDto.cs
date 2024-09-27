@@ -7,6 +7,7 @@ namespace BDRDExce.Models.DTOs
         public string Title { get; set; }
         public string Label { get; set; }
         public string ImageUrl { get; set; }
+        
         public List<ExamDto> Exams { get; set; }
     }
 }

@@ -14,7 +14,8 @@ namespace BDRDExce.Infrastructures.Services
         }
         public override async Task<IEnumerable<Course>> GetAllAsync()
         {
-            return await _dbSet.Include(x => x.Exams).ToListAsync();
+            var a =  await _dbSet.Include(x => x.Exams).ThenInclude(x => x.Medias).ToListAsync();
+            return a;
         }
 
         public override async Task<Course> GetByIdAsync(object id)
@@ -59,27 +60,44 @@ namespace BDRDExce.Infrastructures.Services
             await base.DeleteAsync(course);
         }
 
-        //Implement any additional methods declared in ICourseService
         public async Task<IEnumerable<Course>> GetCoursesByUserIdAsync(string userId)
         {
-            // Custom logic to retrieve courses by user ID
-            return await _dbSet.Where(course => course.UserId == userId).Include(x => x.Exams).ToListAsync();
+            var a = await _dbSet.Where(course => course.UserId == userId).Include(x => x.Exams).ToListAsync();
+            return a; 
         }
 
         public async Task<CourseDto> AddCourse(CreateCourseDto courseDto, HttpRequest request)
         {
-            var course = new Course
+            List<Media> medias = new List<Media>();
+            using (var ms = new MemoryStream())
+            {
+                await courseDto.Image.CopyToAsync(ms);
+                var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
+                var id = Guid.NewGuid().ToString();
+                var media = new Media
                 {
-                    Desc = courseDto.Desc,
-                    Title = courseDto.Title,
-                    UserId = courseDto.UserId,
-                    CreatedAt = DateTime.UtcNow,
-                    ImageUrl = courseDto.ImageUrl,
-                    Label = courseDto.Label
+                    Id = id,
+                    ContentType = courseDto.Image.ContentType,
+                    ContentName = courseDto.Image.FileName,
+                    Content = fileBytes,
+                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
                 };
-                await _dbSet.AddAsync(course);
-                await _context.SaveChangesAsync();
-                return new CourseDto{Title = course.Title, Label = course.Label};
+                medias.Add(media);
+            }
+            
+            var course = new Course
+            {
+                Desc = courseDto.Desc,
+                Title = courseDto.Title,
+                UserId = courseDto.UserId,
+                CreatedAt = DateTime.UtcNow,
+                Medias = medias,
+                ImageUrl = medias.FirstOrDefault().FileUrl,
+                Label = courseDto.Label
+            };
+            await _dbSet.AddAsync(course);
+            await _context.SaveChangesAsync();
+            return new CourseDto{Title = course.Title, Label = course.Label};
         }
     }
 }

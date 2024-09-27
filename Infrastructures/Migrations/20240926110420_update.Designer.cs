@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BDRDExce.Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240923092914_Init")]
-    partial class Init
+    [Migration("20240926110420_update")]
+    partial class update
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -171,6 +171,21 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("BDRDExce.Models.CourseMedia", b =>
+                {
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MediaId")
+                        .HasColumnType("text");
+
+                    b.HasKey("CourseId", "MediaId");
+
+                    b.HasIndex("MediaId");
+
+                    b.ToTable("CourseMedias");
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Exam", b =>
@@ -437,6 +452,21 @@ namespace BDRDExce.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BDRDExce.Models.CourseMedia", b =>
+                {
+                    b.HasOne("BDRDExce.Models.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BDRDExce.Models.Media", null)
+                        .WithMany()
+                        .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Exam", b =>
