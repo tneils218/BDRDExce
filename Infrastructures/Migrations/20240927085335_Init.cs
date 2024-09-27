@@ -27,35 +27,6 @@ namespace BDRDExce.Infrastructures.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUsers",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    DOB = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
-                    AvatarUrl = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Medias",
                 columns: table => new
                 {
@@ -89,6 +60,41 @@ namespace BDRDExce.Infrastructures.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    DOB = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    AvatarUrl = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    MediaId = table.Column<string>(type: "text", nullable: true),
+                    Role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_Medias_MediaId",
+                        column: x => x.MediaId,
+                        principalTable: "Medias",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -185,7 +191,7 @@ namespace BDRDExce.Infrastructures.Migrations
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     Desc = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
-                    MediaId = table.Column<string>(type: "text", nullable: true),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
                 },
@@ -198,8 +204,26 @@ namespace BDRDExce.Infrastructures.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CourseMedias",
+                columns: table => new
+                {
+                    MediaId = table.Column<string>(type: "text", nullable: false),
+                    CourseId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CourseMedias", x => new { x.CourseId, x.MediaId });
                     table.ForeignKey(
-                        name: "FK_Courses_Medias_MediaId",
+                        name: "FK_CourseMedias_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CourseMedias_Medias_MediaId",
                         column: x => x.MediaId,
                         principalTable: "Medias",
                         principalColumn: "Id",
@@ -364,6 +388,12 @@ namespace BDRDExce.Infrastructures.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_MediaId",
+                table: "AspNetUsers",
+                column: "MediaId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -380,10 +410,9 @@ namespace BDRDExce.Infrastructures.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Courses_MediaId",
-                table: "Courses",
-                column: "MediaId",
-                unique: true);
+                name: "IX_CourseMedias_MediaId",
+                table: "CourseMedias",
+                column: "MediaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Courses_UserId",
@@ -436,6 +465,9 @@ namespace BDRDExce.Infrastructures.Migrations
 
             migrationBuilder.DropTable(
                 name: "Comments");
+
+            migrationBuilder.DropTable(
+                name: "CourseMedias");
 
             migrationBuilder.DropTable(
                 name: "ExamMedias");

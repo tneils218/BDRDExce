@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BDRDExce.Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240926110420_update")]
-    partial class update
+    [Migration("20240927085335_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,6 +62,9 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("MediaId")
+                        .HasColumnType("text");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -94,6 +97,9 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MediaId")
+                        .IsUnique();
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -426,6 +432,15 @@ namespace BDRDExce.Infrastructures.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("BDRDExce.Models.AppUser", b =>
+                {
+                    b.HasOne("BDRDExce.Models.Media", "Media")
+                        .WithOne()
+                        .HasForeignKey("BDRDExce.Models.AppUser", "MediaId");
+
+                    b.Navigation("Media");
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Comment", b =>
