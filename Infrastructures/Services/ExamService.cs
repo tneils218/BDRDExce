@@ -30,14 +30,14 @@ public class ExamService : BaseDbService<Exam>, IExamService
         };
         await _dbSet.AddAsync(exam);
         await _context.SaveChangesAsync();
-        return new ExamDto(exam.Title, exam.Content, exam.CourseId, exam.IsComplete);
+        return new ExamDto(exam.Id, exam.Title, exam.Content, exam.CourseId, exam.IsComplete);
     }
 
     public async Task<IEnumerable<ExamDto>> GetAllExam()
     {
         var exams = await _dbSet.ToListAsync();
         var examDto = exams.Select(e => {
-            return new ExamDto(e.Title, e.Content, e.CourseId, e.IsComplete);
+            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete);
         });
         return examDto;
     }
@@ -46,7 +46,7 @@ public class ExamService : BaseDbService<Exam>, IExamService
     {
         var exams = await _dbSet.Where(e => e.CourseId == courseId).ToListAsync();
         var examDtos = exams.Select(x => {
-            return new ExamDto(x.Title, x.Content, x.CourseId, x.IsComplete);
+            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete);
         });
         return examDtos;
     }

@@ -63,7 +63,7 @@ namespace BDRDExce.Infrastructures.Services
         public async Task<IEnumerable<Course>> GetCoursesByUserIdAsync(string userId)
         {
             // Custom logic to retrieve courses by user ID
-            return await _dbSet.Where(course => course.UserId == userId).ToListAsync();
+            return await _dbSet.Where(course => course.UserId == userId).Include(x => x.Exams).ToListAsync();
         }
 
         public async Task<CourseDto> AddCourse(CreateCourseDto courseDto, HttpRequest request)
