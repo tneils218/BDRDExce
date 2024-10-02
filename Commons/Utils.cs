@@ -1,9 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
+namespace BDRDExce.Commons;
+
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-
-namespace BDRDExce.Commons.Utils;
 
 public static class Utils {
 

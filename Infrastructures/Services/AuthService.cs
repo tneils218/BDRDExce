@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BDRDExce.Commons.Utils;
 using BDRDExce.Exceptions;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
@@ -11,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BDRDExce.Infrastructures.Services;
+
+using Commons;
 
 public class AuthService : IAuthService
 {

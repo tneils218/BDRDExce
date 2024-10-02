@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
-using BDRDExce.Commons.Utils;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authentication;
@@ -13,6 +12,8 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BDRDExce.AuthenticationHandler;
+
+using Commons;
 
 public class JwtHandler : JwtBearerHandler, IAuthenticationSignInHandler
 {

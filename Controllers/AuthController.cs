@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BDRDExce.Commons.Utils;
 using BDRDExce.Exceptions;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
