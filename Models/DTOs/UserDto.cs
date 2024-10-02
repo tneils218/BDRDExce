@@ -11,6 +11,7 @@ namespace BDRDExce.Models.DTOs
         public string DOB { get; set; }
         public string AvatarUrl { get; set; }
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
         public long? Expires { get; set; }
         public bool EmailConfirmed { get; set; }
         public string Role { get; set; }
@@ -30,7 +31,7 @@ namespace BDRDExce.Models.DTOs
             Role = role;
         }
 
-        public UserDto(AppUser user, string token, long expires, string role)
+        public UserDto(AppUser user, string token, string refreshToken, long expires, string role)
         {
             Id = user.Id;
             FullName = user.FullName;
@@ -39,6 +40,7 @@ namespace BDRDExce.Models.DTOs
             DOB = user.DOB;
             AvatarUrl = user.AvatarUrl;
             Token = token;
+            RefreshToken = refreshToken;
             Expires = expires;
             Role = role;
             EmailConfirmed = user.EmailConfirmed;

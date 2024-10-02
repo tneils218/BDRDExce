@@ -44,11 +44,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(string id, UserDto updatedUser)
+    public async Task<IActionResult> UpdateUser(string id, UpdateUserDto updatedUser)
     {
         try
         {
-            var result = await _userService.UpdateUserAsync(id, updatedUser);
+            var result = await _userService.UpdateUserAsync(id, updatedUser, Request);
             if (result.Succeeded)
             {
                 return Ok(updatedUser);

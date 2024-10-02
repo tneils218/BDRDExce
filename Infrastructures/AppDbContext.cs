@@ -21,7 +21,6 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Submission> Submissions { get; init; }
     public DbSet<ExamMedia> ExamMedias { get; init; }
     public DbSet<SubmissionMedia> SubmissionMedias { get; init; }
-    public DbSet<CourseMedia> CourseMedias { get; init;}
     public DbSet<Media> Medias { get; init; }
     public DbSet<Exam> Exams { get; init; }
  
@@ -58,11 +57,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .WithMany()
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
-            entity.HasMany(e => e.Medias)
-                  .WithMany()
-                  .UsingEntity<CourseMedia>(
-                  l => l.HasOne<Media>().WithMany().HasForeignKey(e => e.MediaId),
-                  r => r.HasOne<Course>().WithMany().HasForeignKey(e => e.CourseId));
+            entity.HasOne(c => c.Media)
+            .WithOne()
+            .HasForeignKey<Course>(c => c.MediaId);
             entity.Property(e => e.Label).HasMaxLength(100);
         });
  

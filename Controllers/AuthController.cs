@@ -1,9 +1,14 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using BDRDExce.Commons.Utils;
 using BDRDExce.Exceptions;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BDRDExce.Controllers;
 
@@ -12,20 +17,29 @@ namespace BDRDExce.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<AuthController> _logger;
     private readonly SignInManager<AppUser> _signInManager;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(SignInManager<AppUser> signInManager, IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(SignInManager<AppUser> signInManager, IAuthService authService, UserManager<AppUser> userManager, ILogger<AuthController> logger, IConfiguration configuration)
     {
+        _userManager = userManager;
         _authService = authService;
         _logger = logger;
         _signInManager = signInManager;
+        _configuration = configuration;
     }
 
     [HttpPost("login")]
     public async Task Login(LoginDto loginDto)
     {
-        await _authService.LoginAsync(loginDto);
+        var result = await _authService.LoginAsync(loginDto);
+        if(!result.Succeeded)
+        {
+            var response = new ResponseDto("Login failure");
+            await Response.WriteAsJsonAsync(response);
+        }
     }
 
     [HttpPost("logout")]
@@ -38,7 +52,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto userDto)
     {
-        var result = await _authService.RegisterAsync(userDto, Request);
+        var result = await _authService.RegisterAsync(userDto);
         if (result.Succeeded)
         {
             return Ok();
@@ -102,5 +116,13 @@ public class AuthController : ControllerBase
             return Ok("Verify Email Successfully");
         }
         return BadRequest("Verify Email Fail!");
+    }
+    
+    [HttpPost]
+    [Route("refresh-token")]
+    public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
+    {
+        var result = await _authService.RefreshTokenAsync(tokenModel);
+        return Ok(result);
     }
 }

@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastuctures;
 using BDRDExce.Models;
@@ -40,7 +41,7 @@ namespace BDRDExce.Infrastructures.Services
 
             existingCourse.Title = course.Title;
             existingCourse.Label = course.Label;
-
+            existingCourse.Desc = course.Desc;
             return await base.UpdateAsync(existingCourse);
         }
 
@@ -68,13 +69,13 @@ namespace BDRDExce.Infrastructures.Services
 
         public async Task<CourseDto> AddCourse(CreateCourseDto courseDto, HttpRequest request)
         {
-            List<Media> medias = new List<Media>();
+            Media media = null;
             using (var ms = new MemoryStream())
             {
                 await courseDto.Image.CopyToAsync(ms);
                 var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
                 var id = Guid.NewGuid().ToString();
-                var media = new Media
+                media = new Media
                 {
                     Id = id,
                     ContentType = courseDto.Image.ContentType,
@@ -82,7 +83,6 @@ namespace BDRDExce.Infrastructures.Services
                     Content = fileBytes,
                     FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
                 };
-                medias.Add(media);
             }
             
             var course = new Course
@@ -91,13 +91,48 @@ namespace BDRDExce.Infrastructures.Services
                 Title = courseDto.Title,
                 UserId = courseDto.UserId,
                 CreatedAt = DateTime.UtcNow,
-                Medias = medias,
-                ImageUrl = medias.FirstOrDefault().FileUrl,
+                Media = media,
+                ImageUrl = media.FileUrl,
                 Label = courseDto.Label
             };
             await _dbSet.AddAsync(course);
             await _context.SaveChangesAsync();
             return new CourseDto{Title = course.Title, Label = course.Label};
+        }
+
+        public async Task<Course> UpdateCourseAsync(ChangeCourseDto courseDto, HttpRequest request)
+        {
+            var course =await _dbSet.FindAsync(courseDto.Id);
+            if(course == null)
+            {
+                return null;
+            }
+            Media media = null;
+            if(courseDto.Image != null)
+            {
+                using(var ms = new MemoryStream())
+                {
+                    await courseDto.Image.CopyToAsync(ms);
+                    var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
+                    var id = Guid.NewGuid().ToString();
+                    media = new Media
+                    {
+                        Id = id,
+                        ContentType = courseDto.Image.ContentType,
+                        ContentName = courseDto.Image.FileName,
+                        Content = fileBytes,
+                        FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
+                    };
+                }
+            }
+            course.Desc = courseDto.Desc == null ? course.Desc : courseDto.Desc;
+            course.Title = courseDto.Title == null ? course.Title : courseDto.Title;
+            course.Label = courseDto.Label == null ? course.Label : courseDto.Label;
+            course.Media = media;
+            course.ImageUrl = media != null ? media.FileUrl : course.ImageUrl;
+            _dbSet.Update(course);
+            await _context.SaveChangesAsync();
+            return course;
         }
     }
 }

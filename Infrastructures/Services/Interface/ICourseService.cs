@@ -8,5 +8,6 @@ namespace BDRDExce.Infrastructures.Services.Interface
     {
         Task<IEnumerable<Course>> GetCoursesByUserIdAsync(string userId);
         Task<CourseDto> AddCourse(CreateCourseDto createExamDto, HttpRequest request);
+        Task<Course> UpdateCourseAsync(ChangeCourseDto courseDto, HttpRequest request);
     }
 }

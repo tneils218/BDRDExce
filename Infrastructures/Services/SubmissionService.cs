@@ -8,8 +8,10 @@ namespace BDRDExce.Infrastructures.Services
 {
     public class SubmissionService : BaseDbService<Submission>, ISubmissionService
     {
-        public SubmissionService(AppDbContext context) : base(context)
+        private readonly IExamService _examService;
+        public SubmissionService(AppDbContext context, IExamService examService) : base(context)
         {
+            _examService = examService;
         }
 
         public override Task<Submission> AddAsync(Submission entity)
@@ -49,6 +51,10 @@ namespace BDRDExce.Infrastructures.Services
             }
             submission.Medias = medias;
             await AddAsync(submission);
+            var exam = await _examService.GetByIdAsync(submissionDto.ExamId);
+            exam.IsComplete = true;
+            await _examService.UpdateAsync(exam);
+
             return new SubmissionDto{Content = submission.Content, ExamId = submission.ExamId, UserId = submission.UserId};
         }
 

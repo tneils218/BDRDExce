@@ -40,23 +40,41 @@ public class UserService : IUserService
         return await _userManager.FindByIdAsync(id);
     }
 
-    public async Task<IdentityResult> UpdateUserAsync(string id, UserDto updatedUser)
+    public async Task<IdentityResult> UpdateUserAsync(string id, UpdateUserDto userDto, HttpRequest request)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
         {
             throw new Exception("User not found");
         }
-        user.FullName = updatedUser.FullName ?? user.FullName;
-        user.Email = updatedUser.Email ?? user.Email;
-        user.PhoneNumber = updatedUser.PhoneNumber ?? user.PhoneNumber;
-        user.DOB = updatedUser.DOB ?? user.DOB;
-        user.AvatarUrl = updatedUser.AvatarUrl ?? user.AvatarUrl;
+        Media media = null;
+        if(userDto.File != null)
+        {
+            using (var ms = new MemoryStream())
+            {
+                await userDto.File.CopyToAsync(ms);
+                var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
+                var idMedia = Guid.NewGuid().ToString();
+                media = new Media
+                {
+                    Id = idMedia,
+                    ContentType = userDto.File.ContentType,
+                    ContentName = userDto.File.FileName,
+                    Content = fileBytes,
+                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{idMedia}"
+                };
+            }
+        }
+        user.FullName = userDto.FullName ?? user.FullName;
+        user.PhoneNumber = userDto.PhoneNumber ?? user.PhoneNumber;
+        user.DOB = userDto.DOB ?? user.DOB;
+        user.AvatarUrl = media.FileUrl;
+        user.Media = media;
 
-        if (!string.IsNullOrWhiteSpace(updatedUser.Password))
+        if (!string.IsNullOrWhiteSpace(userDto.Password))
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var passwordChangeResult = await _userManager.ResetPasswordAsync(user, token, updatedUser.Password);
+            var passwordChangeResult = await _userManager.ResetPasswordAsync(user, token, userDto.Password);
             if (!passwordChangeResult.Succeeded)
             {
                 return passwordChangeResult;

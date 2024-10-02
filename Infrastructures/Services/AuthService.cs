@@ -38,7 +38,7 @@ public class AuthService : IAuthService
 
     public async Task<SignInResult> LoginAsync(LoginDto loginDto)
     {
-        var r = _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+        _signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
         var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
         return result;
     }
@@ -48,24 +48,8 @@ public class AuthService : IAuthService
         await _signInManager.SignOutAsync();
     }
 
-    public async Task<IdentityResult> RegisterAsync(RegisterDto userDto, HttpRequest request)
+    public async Task<IdentityResult> RegisterAsync(RegisterDto userDto)
     {
-        Media media;
-        using (var ms = new MemoryStream())
-            {
-                await userDto.File.CopyToAsync(ms);
-                var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
-                var id = Guid.NewGuid().ToString();
-                media = new Media
-                {
-                    Id = id,
-                    ContentType = userDto.File.ContentType,
-                    ContentName = userDto.File.FileName,
-                    Content = fileBytes,
-                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                };
-                
-            }
         var role = await _roleManager.FindByNameAsync("Students");
         var user = new AppUser
         {
@@ -73,9 +57,8 @@ public class AuthService : IAuthService
             Email = userDto.Email,
             FullName = userDto.FullName,
             DOB = DateTime.Now.ToString("dd/MM/yyyy"),
-            AvatarUrl = media.FileUrl,
+            AvatarUrl = string.Empty,
             Role = role.Name,
-            Media = media
         };
         var result = await _signInManager.UserManager.CreateAsync(user, userDto.Password);
         if (result.Succeeded)
@@ -196,5 +179,66 @@ public class AuthService : IAuthService
         var result = await _userManager.UpdateAsync(user);
         return result;
     }
+
+    public async Task<TokenModel> RefreshTokenAsync(TokenModel token)
+    {
+        if (token is null)
+        {
+            
+        }
+        string accessToken = token.AccessToken;
+        string refreshToken = token.RefreshToken;
+        var principal = GetPrincipalFromExpiredToken(accessToken);
+        if (principal == null)
+        {
+                
+        }
+        string username = principal.Identity.Name;
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+        {
+                
+        }
+        var newAccessToken = CreateToken(principal.Claims.ToList());
+        var newRefreshToken = Utils.GenerateRefreshToken();
+        user.RefreshToken = newRefreshToken;
+        await _userManager.UpdateAsync(user);
+        return new TokenModel
+        {
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+            RefreshToken = newRefreshToken
+        };
+    }
+
+    private JwtSecurityToken CreateToken(List<Claim> authClaims)
+        {
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            _ = int.TryParse(_configuration["Jwt:ExpireMinutes"], out int tokenValidityInMinutes);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                );
+            return token;
+        }
+
+        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
+                ValidateLifetime = false
+            };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+            return principal;
+        }
 }
 

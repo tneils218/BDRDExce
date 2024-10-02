@@ -58,28 +58,19 @@ namespace BDRDExce.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCourse(int id, ChangeCourseDto courseDto)
+        [HttpPut]
+        public async Task<IActionResult> UpdateCourse(ChangeCourseDto courseDto)
         {
-            if (id != courseDto.Id)
-            {
-                return BadRequest();
-            }
-
             try
             {
-                var course = new Course
-                {
-                    Id = courseDto.Id,
-                    Title = courseDto.Title,
-                    Label = courseDto.Label
-                };
-                var updatedCourse = await _courseService.UpdateAsync(course);
+                var updatedCourse = await _courseService.UpdateCourseAsync(courseDto, Request);
+                if(updatedCourse == null)
+                    return BadRequest("Course Not Found!");
                 return Ok(updatedCourse);
             }
-            catch (KeyNotFoundException)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.ToString());
             }
         }
 

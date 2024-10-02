@@ -1,4 +1,5 @@
 using BDRDExce.Infrastructures.Services.Interface;
+using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +35,26 @@ public class ExamController : ControllerBase
     public async Task<ActionResult<IEnumerable<ExamDto>>> GetExamByCourseId(int courseId)
     {
         var result = await _examService.GetExamsByCourseId(courseId);
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteExam(int id)
+    {
+        await _examService.DeleteAsync(id);
+        return Ok();
+    }
+
+    [HttpPut]
+    public async Task<ActionResult> EditExam(ChangeExamDto examDto)
+    {
+        var exam = new Exam {
+            Id = examDto.id,
+            Content = examDto.Content,
+            Title = examDto.Title,
+            CourseId = examDto.CourseId
+        };
+        var result = await _examService.UpdateAsync(exam);
         return Ok(result);
     }
 }

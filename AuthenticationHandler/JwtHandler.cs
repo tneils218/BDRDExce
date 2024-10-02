@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using BDRDExce.Commons.Utils;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authentication;
@@ -16,11 +18,13 @@ public class JwtHandler : JwtBearerHandler, IAuthenticationSignInHandler
 {
     private readonly IConfiguration _configuration;
     private readonly UserManager<AppUser> _userManager;
+    private readonly int _refreshTokenValidityIndays;
 
     public JwtHandler(UserManager<AppUser> userManager, IConfiguration configuration, IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
     {
         _configuration = configuration;
         _userManager = userManager;
+        _refreshTokenValidityIndays = int.Parse(_configuration["Jwt:RefreshTokenValidityInDays"]);
     }
 
     public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
@@ -29,7 +33,11 @@ public class JwtHandler : JwtBearerHandler, IAuthenticationSignInHandler
         var appUser = await _userManager.FindByEmailAsync(email);
         var tokenInfo = GenerateJwtToken(user);
         var role = await _userManager.GetRolesAsync(appUser);
-        var dto = new UserDto(appUser, tokenInfo.Token, new DateTimeOffset(tokenInfo.Expires).ToUnixTimeMilliseconds(), role.FirstOrDefault());
+        var refreshToken = Utils.GenerateRefreshToken();
+        appUser.RefreshToken = refreshToken;
+        appUser.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_refreshTokenValidityIndays);
+        await _userManager.UpdateAsync(appUser);
+        var dto = new UserDto(appUser, tokenInfo.Token, refreshToken, new DateTimeOffset(tokenInfo.Expires).ToUnixTimeMilliseconds(), role.FirstOrDefault());
         var response = new ResponseDto("Login successful!", dto);
         await Context.Response.WriteAsJsonAsync(response);
     }

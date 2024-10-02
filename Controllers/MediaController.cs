@@ -15,7 +15,7 @@ namespace BDRDExce.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> DownloadFileMedia(string id)
+        public async Task<IActionResult> GetImage(string id)
         {
             var media = await _mediaService.GetByIdAsync(id);
             if (media == null)
@@ -24,5 +24,16 @@ namespace BDRDExce.Controllers
             // Trả về file từ database
             return File(media.Content, media.ContentType, null);
         }
+        [HttpGet("Download/{id}")]
+        public async Task<IActionResult> DownloadFile(string id)
+        {
+            var media = await _mediaService.GetByIdAsync(id);
+            if (media == null)
+                return NotFound();
+
+            // Trả về file từ database
+            return File(media.Content, media.ContentType, media.ContentName);
+        }
+
     }
 }

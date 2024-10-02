@@ -2,6 +2,7 @@ using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastuctures;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services;
@@ -42,6 +43,11 @@ public class ExamService : BaseDbService<Exam>, IExamService
         return examDto;
     }
 
+    public override Task DeleteAsync(object id)
+    {
+        return base.DeleteAsync(id);
+    }
+
     public async Task<IEnumerable<ExamDto>> GetExamsByCourseId(int courseId)
     {
         var exams = await _dbSet.Where(e => e.CourseId == courseId).ToListAsync();
@@ -51,30 +57,44 @@ public class ExamService : BaseDbService<Exam>, IExamService
         return examDtos;
     }
     private async Task<List<Media>> ProcessUploadedFiles(List<IFormFile> files, HttpRequest request)
+    {
+        var medias = new List<Media>();
+        foreach (var file in files)
         {
-            var medias = new List<Media>();
-            foreach (var file in files)
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (file.Length > 0 && file.Length <= _maxFileSize && _allowedContentTypes.Contains(fileExtension))
             {
-                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (file.Length > 0 && file.Length <= _maxFileSize && _allowedContentTypes.Contains(fileExtension))
+                using (var ms = new MemoryStream())
                 {
-                    using (var ms = new MemoryStream())
+                    await file.CopyToAsync(ms);
+                    var fileBytes = ms.ToArray();
+                    var id = Guid.NewGuid().ToString();
+                    var media = new Media
                     {
-                        await file.CopyToAsync(ms);
-                        var fileBytes = ms.ToArray();
-                        var id = Guid.NewGuid().ToString();
-                        var media = new Media
-                        {
-                            Id = id,
-                            ContentType = file.ContentType,
-                            ContentName = file.FileName,
-                            Content = fileBytes,
-                            FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                        };
-                        medias.Add(media);
-                    }
+                        Id = id,
+                        ContentType = file.ContentType,
+                        ContentName = file.FileName,
+                        Content = fileBytes,
+                        FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
+                    };
+                    medias.Add(media);
                 }
             }
-            return medias;
         }
+        return medias;
+    }
+
+    public override async Task<Exam> UpdateAsync(Exam entity)
+    {
+        var exam = await _dbSet.FindAsync(entity.Id);
+        if(exam != null)
+        {
+            exam.Content = entity.Content;
+            exam.Title = entity.Title;
+            exam.CourseId = entity.CourseId;
+            exam.IsComplete = entity.IsComplete;
+            return await base.UpdateAsync(exam);
+        }
+        return null;
+    }
 }

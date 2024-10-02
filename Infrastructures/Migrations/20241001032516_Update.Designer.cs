@@ -3,6 +3,7 @@ using System;
 using BDRDExce.Infrastuctures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BDRDExce.Infrastructures.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241001032516_Update")]
+    partial class Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -168,9 +171,6 @@ namespace BDRDExce.Infrastructures.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("MediaId")
-                        .HasColumnType("text");
-
                     b.Property<string>("Title")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -180,12 +180,24 @@ namespace BDRDExce.Infrastructures.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MediaId")
-                        .IsUnique();
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("BDRDExce.Models.CourseMedia", b =>
+                {
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MediaId")
+                        .HasColumnType("text");
+
+                    b.HasKey("CourseId", "MediaId");
+
+                    b.HasIndex("MediaId");
+
+                    b.ToTable("CourseMedias");
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Exam", b =>
@@ -455,18 +467,27 @@ namespace BDRDExce.Infrastructures.Migrations
 
             modelBuilder.Entity("BDRDExce.Models.Course", b =>
                 {
-                    b.HasOne("BDRDExce.Models.Media", "Media")
-                        .WithOne()
-                        .HasForeignKey("BDRDExce.Models.Course", "MediaId");
-
                     b.HasOne("BDRDExce.Models.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Media");
-
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BDRDExce.Models.CourseMedia", b =>
+                {
+                    b.HasOne("BDRDExce.Models.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BDRDExce.Models.Media", null)
+                        .WithMany()
+                        .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BDRDExce.Models.Exam", b =>

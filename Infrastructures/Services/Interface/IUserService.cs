@@ -8,7 +8,7 @@ namespace BDRDExce.Infrastructures.Services.Interface
     {
         Task<IEnumerable<UserDto>> GetUsersAsync();
         Task<AppUser> GetUserByIdAsync(string id);
-        Task<IdentityResult> UpdateUserAsync(string id, UserDto updatedUser);
+        Task<IdentityResult> UpdateUserAsync(string id, UpdateUserDto updatedUser, HttpRequest request);
         Task<IdentityResult> DeleteUserAsync(string id);
     }
 }
