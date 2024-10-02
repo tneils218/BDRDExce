@@ -10,7 +10,7 @@ namespace BDRDExce.Infrastructures.Services
     {
         private readonly string _from = configuration["MailSetting:From"];
         private readonly string _host = configuration["MailSetting:Host"];
-        private readonly int _port = int.Parse(configuration["MailSetting:Port"]);
+        private readonly int _port = int.Parse(configuration["MailSetting:Port"]!);
         private readonly string _password = configuration["MailSetting:Password"];
         private const string EmailAddressSeparator = "@";
         public void SendEmail(string email, string subject, string body)
@@ -20,13 +20,11 @@ namespace BDRDExce.Infrastructures.Services
                 var message = CreateMailMessage(email, subject, body);
                 try
                 {
-                    using (var client = new SmtpClient())
-                        {
-                            client.Connect(_host, _port, SecureSocketOptions.StartTls);
-                            client.Authenticate(_from , _password);
-                            client.Send(message);
-                            client.Disconnect(true);
-                        }
+                    using var client = new SmtpClient();
+                    client.Connect(_host, _port, SecureSocketOptions.StartTls);
+                    client.Authenticate(_from , _password);
+                    client.Send(message);
+                    client.Disconnect(true);
 
                 }
                 catch (Exception ex)

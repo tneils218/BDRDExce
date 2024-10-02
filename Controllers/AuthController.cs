@@ -14,27 +14,18 @@ namespace BDRDExce.Controllers;
 
 [Route("api/v1/[controller]")]
 [ApiController]
-public class AuthController : ControllerBase
+public class AuthController(SignInManager<AppUser> signInManager, IAuthService authService, UserManager<AppUser> userManager, ILogger<AuthController> logger, IConfiguration configuration)
+    : ControllerBase
 {
-    private readonly IAuthService _authService;
-    private readonly UserManager<AppUser> _userManager;
-    private readonly ILogger<AuthController> _logger;
-    private readonly SignInManager<AppUser> _signInManager;
-    private readonly IConfiguration _configuration;
-
-    public AuthController(SignInManager<AppUser> signInManager, IAuthService authService, UserManager<AppUser> userManager, ILogger<AuthController> logger, IConfiguration configuration)
-    {
-        _userManager = userManager;
-        _authService = authService;
-        _logger = logger;
-        _signInManager = signInManager;
-        _configuration = configuration;
-    }
+    private readonly UserManager<AppUser>    _userManager   = userManager;
+    private readonly ILogger<AuthController> _logger        = logger;
+    private readonly SignInManager<AppUser>  _signInManager = signInManager;
+    private readonly IConfiguration          _configuration = configuration;
 
     [HttpPost("login")]
     public async Task Login(LoginDto loginDto)
     {
-        var result = await _authService.LoginAsync(loginDto);
+        var result = await authService.LoginAsync(loginDto);
         if(!result.Succeeded)
         {
             var response = new ResponseDto("Login failure");
@@ -45,14 +36,14 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        await _authService.LogoutAsync();
+        await authService.LogoutAsync();
         return Ok();
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto userDto)
     {
-        var result = await _authService.RegisterAsync(userDto);
+        var result = await authService.RegisterAsync(userDto);
         if (result.Succeeded)
         {
             return Ok();
@@ -65,7 +56,7 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var result = await _authService.ChangePasswordAsync(changePasswordDto);
+            var result = await authService.ChangePasswordAsync(changePasswordDto);
             if (result.Succeeded)
             {
                 return Ok();
@@ -84,7 +75,7 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var token = await _authService.ForgotPasswordAsync(userDto);
+            var token = await authService.ForgotPasswordAsync(userDto);
             return Ok(token);
         }
         catch (CustomException ex)
@@ -97,7 +88,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> AddRoleToUser(string userId, string roleName)
     {
         // Inject UserManager and RoleManager (via constructor or service locator)
-        var result = await _authService.AddRoleToUser(userId, roleName);
+        var result = await authService.AddRoleToUser(userId, roleName);
 
         if (result.Succeeded)
         {
@@ -110,7 +101,7 @@ public class AuthController : ControllerBase
     [HttpGet("verify")]
     public async Task<ActionResult> VerifyEmailAsync(string hashCodeEmail)
     {
-        var result = await _authService.VerifyEmailAsync(hashCodeEmail);
+        var result = await authService.VerifyEmailAsync(hashCodeEmail);
         if (result.Succeeded)
         {
             return Ok("Verify Email Successfully");
@@ -122,7 +113,7 @@ public class AuthController : ControllerBase
     [Route("refresh-token")]
     public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
     {
-        var result = await _authService.RefreshTokenAsync(tokenModel);
+        var result = await authService.RefreshTokenAsync(tokenModel);
         return Ok(result);
     }
 }

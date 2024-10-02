@@ -7,24 +7,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services;
-public class UserService : IUserService
+public class UserService(UserManager<AppUser> userManager) : IUserService
 {
-    private readonly UserManager<AppUser> _userManager;
-
-    public UserService(UserManager<AppUser> userManager)
-    {
-        _userManager = userManager;
-    }
-
     public async Task<IEnumerable<UserDto>> GetUsersAsync()
     {
-        var users = _userManager.Users.ToList();
+        var users = userManager.Users.ToList();
         var userRolesList = new List<UserDto>();
 
         foreach (var user in users)
         {
             // Lấy vai trò của người dùng từ UserManager
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await userManager.GetRolesAsync(user);
 
             // Tạo đối tượng ViewModel để chứa thông tin người dùng và vai trò
             var userWithRoles = new UserDto(user, roles.FirstOrDefault());
@@ -37,12 +30,12 @@ public class UserService : IUserService
 
     public async Task<AppUser> GetUserByIdAsync(string id)
     {
-        return await _userManager.FindByIdAsync(id);
+        return await userManager.FindByIdAsync(id);
     }
 
     public async Task<IdentityResult> UpdateUserAsync(string id, UpdateUserDto userDto, HttpRequest request)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
             throw new Exception("User not found");
@@ -68,30 +61,30 @@ public class UserService : IUserService
         user.FullName = userDto.FullName ?? user.FullName;
         user.PhoneNumber = userDto.PhoneNumber ?? user.PhoneNumber;
         user.DOB = userDto.DOB ?? user.DOB;
-        user.AvatarUrl = media.FileUrl;
+        user.AvatarUrl = media.FileUrl!;
         user.Media = media;
 
         if (!string.IsNullOrWhiteSpace(userDto.Password))
         {
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var passwordChangeResult = await _userManager.ResetPasswordAsync(user, token, userDto.Password);
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var passwordChangeResult = await userManager.ResetPasswordAsync(user, token, userDto.Password);
             if (!passwordChangeResult.Succeeded)
             {
                 return passwordChangeResult;
             }
         }
 
-        return await _userManager.UpdateAsync(user);
+        return await userManager.UpdateAsync(user);
     }
 
     public async Task<IdentityResult> DeleteUserAsync(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await userManager.FindByIdAsync(id);
         if (user == null)
         {
             throw new Exception("User not found");
         }
 
-        return await _userManager.DeleteAsync(user);
+        return await userManager.DeleteAsync(user);
     }
 }

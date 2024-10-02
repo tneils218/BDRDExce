@@ -10,21 +10,13 @@ namespace BDRDExce.Controllers
     [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class CourseController : ControllerBase
+    public class CourseController(ICourseService courseService) : ControllerBase
     {
-        private readonly ICourseService _courseService;
-
-        public CourseController(ICourseService courseService)
-        {
-            _courseService = courseService;
-        }
-
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CourseDto>>> GetAllCourses(string userId)
         {
             var idUser = userId == null ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : userId;
-            var courses = await _courseService.GetCoursesByUserIdAsync(idUser);
+            var courses = await courseService.GetCoursesByUserIdAsync(idUser);
             var courseDto = courses.Select(c => 
             {
                 return new CourseDto { Id = c.Id, Title = c.Title, Desc = c.Desc, Label = c.Label, ImageUrl = c.ImageUrl, Exams = c.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete)).ToList() };
@@ -35,7 +27,7 @@ namespace BDRDExce.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CourseDto>> GetCourseById(int id)
         {
-            var course = await _courseService.GetByIdAsync(id);
+            var course = await courseService.GetByIdAsync(id);
             if (course == null)
             {
                 return NotFound();
@@ -49,7 +41,7 @@ namespace BDRDExce.Controllers
         {
             try
             {
-                var result = await _courseService.AddCourse(courseDto, Request);
+                var result = await courseService.AddCourse(courseDto, Request);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -63,7 +55,7 @@ namespace BDRDExce.Controllers
         {
             try
             {
-                var updatedCourse = await _courseService.UpdateCourseAsync(courseDto, Request);
+                var updatedCourse = await courseService.UpdateCourseAsync(courseDto, Request);
                 if(updatedCourse == null)
                     return BadRequest("Course Not Found!");
                 return Ok(updatedCourse);
@@ -79,7 +71,7 @@ namespace BDRDExce.Controllers
         {
             try
             {
-                await _courseService.DeleteAsync(id);
+                await courseService.DeleteAsync(id);
                 return NoContent();
             }
             catch (KeyNotFoundException)

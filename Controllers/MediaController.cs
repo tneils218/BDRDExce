@@ -6,18 +6,12 @@ namespace BDRDExce.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class MediaController : ControllerBase
+    public class MediaController(IMediaService mediaService) : ControllerBase
     {
-        private readonly IMediaService _mediaService;
-        public MediaController(IMediaService mediaService)
-        {
-            _mediaService = mediaService;
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetImage(string id)
         {
-            var media = await _mediaService.GetByIdAsync(id);
+            var media = await mediaService.GetByIdAsync(id);
             if (media == null)
                 return NotFound();
 
@@ -27,7 +21,7 @@ namespace BDRDExce.Controllers
         [HttpGet("Download/{id}")]
         public async Task<IActionResult> DownloadFile(string id)
         {
-            var media = await _mediaService.GetByIdAsync(id);
+            var media = await mediaService.GetByIdAsync(id);
             if (media == null)
                 return NotFound();
 

@@ -7,13 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services;
 
-public class ExamService : BaseDbService<Exam>, IExamService
+public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), IExamService
 {
     private readonly string[] _allowedContentTypes = {".jpg", ".png", ".jpeg", ".rar", ".zip"};
     private const long _maxFileSize = 10 * 1024 * 1024;
-    public ExamService(AppDbContext context) : base(context)
-    {
-    }
 
     public async Task<ExamDto> AddExam(CreateExamDto createExamDto, HttpRequest request)
     {

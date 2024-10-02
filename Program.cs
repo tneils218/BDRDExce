@@ -1,3 +1,4 @@
+using BDRDExce.Extensions;
 using BDRDExce.Infrastuctures;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

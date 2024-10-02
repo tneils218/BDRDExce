@@ -8,22 +8,15 @@ namespace BDRDExce.Controllers;
 [Authorize]
 [Route("api/v1/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public class UserController(IUserService userService) : ControllerBase
 {
-    private readonly IUserService _userService;
-
-    public UserController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
         try
         {
             var userEmail = User.Identity.Name;
-            var users = await _userService.GetUsersAsync();
+            var users = await userService.GetUsersAsync();
             return Ok(users);
         }
         catch (Exception ex)
@@ -35,7 +28,7 @@ public class UserController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(string id)
     {
-        var user = await _userService.GetUserByIdAsync(id);
+        var user = await userService.GetUserByIdAsync(id);
         if (user == null)
         {
             return NotFound();
@@ -48,7 +41,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var result = await _userService.UpdateUserAsync(id, updatedUser, Request);
+            var result = await userService.UpdateUserAsync(id, updatedUser, Request);
             if (result.Succeeded)
             {
                 return Ok(updatedUser);
@@ -66,7 +59,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var result = await _userService.DeleteUserAsync(id);
+            var result = await userService.DeleteUserAsync(id);
             if (result.Succeeded)
             {
                 return Ok(new { Message = "User deleted successfully" });

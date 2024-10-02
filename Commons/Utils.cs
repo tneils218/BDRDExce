@@ -10,30 +10,22 @@ public static class Utils {
     public static string Decrypt(string cipherText, string key)
         {
             byte[] fullCipher = Convert.FromBase64String(cipherText);
+
+            using Aes aes = Aes.Create();
+            aes.Key = GetAesKey(key);
+            byte[] iv     = new byte[aes.BlockSize / 8];
+            byte[] cipher = new byte[fullCipher.Length - iv.Length];
  
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = GetAesKey(key);
-                byte[] iv = new byte[aes.BlockSize / 8];
-                byte[] cipher = new byte[fullCipher.Length - iv.Length];
+            Array.Copy(fullCipher, iv, iv.Length);
+            Array.Copy(fullCipher, iv.Length, cipher, 0, cipher.Length);
  
-                Array.Copy(fullCipher, iv, iv.Length);
-                Array.Copy(fullCipher, iv.Length, cipher, 0, cipher.Length);
- 
-                aes.IV = iv;
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
- 
-                using (MemoryStream ms = new MemoryStream(cipher))
-                {
-                    using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader sr = new StreamReader(cs))
-                        {
-                            return sr.ReadToEnd();
-                        }
-                    }
-                }
-            }
+            aes.IV = iv;
+            ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+            using MemoryStream ms = new MemoryStream(cipher);
+            using CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using StreamReader sr = new StreamReader(cs);
+            return sr.ReadToEnd();
         }
  
         private static byte[] GetAesKey(string key)

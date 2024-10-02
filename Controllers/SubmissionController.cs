@@ -8,18 +8,12 @@ namespace BDRDExce.Controllers
     [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class SubmissionController : ControllerBase
+    public class SubmissionController(ISubmissionService submissionService) : ControllerBase
     {
-        private readonly ISubmissionService _submissionService;
-        public SubmissionController(ISubmissionService submissionService)
-        {
-            _submissionService = submissionService;
-        }
-
         [HttpPost]
         public async Task<ActionResult> CreateSubmission(CreateSubmissionDto submissionDto)
         {
-            var result = await _submissionService.AddSubmission(submissionDto, Request);
+            var result = await submissionService.AddSubmission(submissionDto, Request);
             return Ok(result);
         }
 
@@ -28,7 +22,7 @@ namespace BDRDExce.Controllers
         {
             try
             {
-                await _submissionService.DeleteAsync(id);
+                await submissionService.DeleteAsync(id);
                 return Ok("Delete success");
             }
             catch(KeyNotFoundException)
@@ -40,14 +34,14 @@ namespace BDRDExce.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubmissionDto>>> GetAllSubmission()
         {
-            var result = await _submissionService.GetAllAsync();
+            var result = await submissionService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("id")]
         public async Task<ActionResult<SubmissionDto>> GetSubmissionById(int id)
         {
-            var result = await _submissionService.GetByIdAsync(id);
+            var result = await submissionService.GetByIdAsync(id);
             return Ok(result);
         }
     }

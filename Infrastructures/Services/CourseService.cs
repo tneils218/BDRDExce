@@ -7,12 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services
 {
-    public class CourseService : BaseDbService<Course>, ICourseService
+    public class CourseService(AppDbContext context) : BaseDbService<Course>(context), ICourseService
     {
-        
-        public CourseService(AppDbContext context) : base(context)
-        {
-        }
         public override async Task<IEnumerable<Course>> GetAllAsync()
         {
             var a =  await _dbSet.Include(x => x.Exams).ThenInclude(x => x.Medias).ToListAsync();

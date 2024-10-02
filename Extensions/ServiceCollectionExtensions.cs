@@ -1,12 +1,12 @@
-using System.Text;
+namespace BDRDExce.Extensions;
+
 using BDRDExce.AuthenticationHandler;
 using BDRDExce.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-
-namespace Microsoft.Extensions.DependencyInjection;
+using System.Text;
 
 public static class ServiceCollectionExtensions
 {

@@ -24,7 +24,7 @@ public class JwtHandler : JwtBearerHandler, IAuthenticationSignInHandler
     {
         _configuration = configuration;
         _userManager = userManager;
-        _refreshTokenValidityIndays = int.Parse(_configuration["Jwt:RefreshTokenValidityInDays"]);
+        _refreshTokenValidityIndays = int.Parse(_configuration["Jwt:RefreshTokenValidityInDays"]!);
     }
 
     public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
@@ -32,7 +32,7 @@ public class JwtHandler : JwtBearerHandler, IAuthenticationSignInHandler
         var email = user.Claims.First(c => c.Type == ClaimTypes.Email).Value;
         var appUser = await _userManager.FindByEmailAsync(email);
         var tokenInfo = GenerateJwtToken(user);
-        var role = await _userManager.GetRolesAsync(appUser);
+        var role = await _userManager.GetRolesAsync(appUser!);
         var refreshToken = Utils.GenerateRefreshToken();
         appUser.RefreshToken = refreshToken;
         appUser.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_refreshTokenValidityIndays);
