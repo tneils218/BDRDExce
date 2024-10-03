@@ -28,14 +28,14 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
         };
         await _dbSet.AddAsync(exam);
         await _context.SaveChangesAsync();
-        return new ExamDto(exam.Id, exam.Title, exam.Content, exam.CourseId, exam.IsComplete);
+        return new ExamDto(exam.Id, exam.Title, exam.Content, exam.CourseId, exam.IsComplete, null);
     }
 
     public async Task<IEnumerable<ExamDto>> GetAllExam()
     {
-        var exams = await _dbSet.ToListAsync();
+        var exams = await _dbSet.Include(x => x.Medias).ToListAsync();
         var examDto = exams.Select(e => {
-            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete);
+            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, e.Medias);
         });
         return examDto;
     }
@@ -49,7 +49,7 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
     {
         var exams = await _dbSet.Where(e => e.CourseId == courseId).ToListAsync();
         var examDtos = exams.Select(x => {
-            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete);
+            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete, x.Medias);
         });
         return examDtos;
     }

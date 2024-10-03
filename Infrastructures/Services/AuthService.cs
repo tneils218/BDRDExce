@@ -21,6 +21,9 @@ public class AuthService : IAuthService
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IEmailSender _emailSender;
     private readonly string _key;
+    private readonly string _resetPasswordCallbackLink;
+    private readonly string _emailConfirmationLink;
+
 
     public AuthService(
         UserManager<AppUser> userManager,
@@ -35,6 +38,8 @@ public class AuthService : IAuthService
         _configuration = configuration;
         _emailSender = emailSender;
         _key = _configuration["KeyAes"];
+        _emailConfirmationLink = _configuration["EmailConfirmationLink"];
+        _resetPasswordCallbackLink = _configuration["ResetPasswordCallbackLink"];
     }
 
     public async Task<SignInResult> LoginAsync(LoginDto loginDto)
@@ -67,8 +72,8 @@ public class AuthService : IAuthService
             var resultAddRole = await _userManager.AddToRoleAsync(user, role.Name);
             if (!resultAddRole.Succeeded)
                 return resultAddRole;
-            _emailSender.SendEmail(userDto.Email, "Reset Password",
-                    "Please reset your password by clicking here: <a href=''>link</a>");
+            _emailSender.SendEmail(userDto.Email, "Confirm your email",
+                    $"Please confirm your account by clicking this link: <a href='{_emailConfirmationLink}'>link</a>");
         }
         return result;
     }
@@ -93,7 +98,7 @@ public class AuthService : IAuthService
         }
         var token = await _signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
         _emailSender.SendEmail(userDto.Email, "Reset Password",
-                "Please reset your password by clicking here: <a href='http://google.com'>link</a>");
+                $"Please reset your password by clicking here: <a href='{_resetPasswordCallbackLink}'>link</a>");
 
         return token;
     }
@@ -185,20 +190,20 @@ public class AuthService : IAuthService
     {
         if (token is null)
         {
-            
+            return new TokenModel{};
         }
         string accessToken = token.AccessToken;
         string refreshToken = token.RefreshToken;
         var principal = GetPrincipalFromExpiredToken(accessToken);
         if (principal == null)
         {
-                
+            return new TokenModel{};    
         }
         string username = principal.Identity.Name;
         var user = await _userManager.FindByNameAsync(username);
         if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
         {
-                
+            return new TokenModel{};    
         }
         var newAccessToken = CreateToken(principal.Claims.ToList());
         var newRefreshToken = Utils.GenerateRefreshToken();

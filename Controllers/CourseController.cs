@@ -19,7 +19,7 @@ namespace BDRDExce.Controllers
             var courses = await courseService.GetCoursesByUserIdAsync(idUser);
             var courseDto = courses.Select(c => 
             {
-                return new CourseDto { Id = c.Id, Title = c.Title, Desc = c.Desc, Label = c.Label, ImageUrl = c.ImageUrl, Exams = c.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete)).ToList() };
+                return new CourseDto { Id = c.Id, Title = c.Title, Desc = c.Desc, Label = c.Label, ImageUrl = c.ImageUrl, Exams = c.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null)).ToList() };
             });
             return Ok(courseDto);
         }
@@ -32,7 +32,7 @@ namespace BDRDExce.Controllers
             {
                 return NotFound();
             }
-            var courseDto = new CourseDto { Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, Exams = course.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete)).ToList() };
+            var courseDto = new CourseDto { Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, Exams = course.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null)).ToList() };
             return Ok(courseDto);
         }
 
@@ -72,7 +72,7 @@ namespace BDRDExce.Controllers
             try
             {
                 await courseService.DeleteAsync(id);
-                return NoContent();
+                return Ok("Delete Course Successfully!");
             }
             catch (KeyNotFoundException)
             {

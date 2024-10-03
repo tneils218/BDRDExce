@@ -121,9 +121,9 @@ namespace BDRDExce.Infrastructures.Services
                     };
                 }
             }
-            course.Desc = courseDto.Desc == null ? course.Desc : courseDto.Desc;
-            course.Title = courseDto.Title == null ? course.Title : courseDto.Title;
-            course.Label = courseDto.Label == null ? course.Label : courseDto.Label;
+            course.Desc = courseDto.Desc ?? course.Desc;
+            course.Title = courseDto.Title ?? course.Title;
+            course.Label = courseDto.Label ?? course.Label;
             course.Media = media;
             course.ImageUrl = media != null ? media.FileUrl : course.ImageUrl;
             _dbSet.Update(course);
