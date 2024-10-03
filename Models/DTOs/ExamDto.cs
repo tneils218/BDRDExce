@@ -7,16 +7,16 @@ public class ExamDto
     public string Content { get; set; }
     public int CourseId { get; set; }
     public bool IsComplete { get; set; }
-    public List<Media> Medias { get; set; }
+    public List<string> FileUrls { get; set; }
     
 
-    public ExamDto(int id, string title, string content, int courseId, bool isComplete, List<Media> medias)
+    public ExamDto(int id, string title, string content, int courseId, bool isComplete, List<string> fileUrls)
     {
         Id = id;
         Title = title;
         Content = content;
         CourseId = courseId;
         IsComplete = isComplete;
-        Medias = medias;
+        FileUrls = fileUrls;
     }
 }
