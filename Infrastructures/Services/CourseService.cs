@@ -11,13 +11,13 @@ namespace BDRDExce.Infrastructures.Services
     {
         public override async Task<IEnumerable<Course>> GetAllAsync()
         {
-            var a =  await _dbSet.Include(x => x.Exams).ThenInclude(x => x.Medias).ToListAsync();
+            var a =  await _dbSet.Include(x => x.Exams).ToListAsync();
             return a;
         }
 
         public override async Task<Course> GetByIdAsync(object id)
         {
-            var result = await _dbSet.Include(x => x.Exams).FirstOrDefaultAsync(x => x.Id == (int)id);
+            var result = await _dbSet.Include(x => x.Exams).Include(x => x.Media).FirstOrDefaultAsync(x => x.Id == (int)id);
             return result;
         }
 
@@ -59,7 +59,7 @@ namespace BDRDExce.Infrastructures.Services
 
         public async Task<IEnumerable<Course>> GetCoursesByUserIdAsync(string userId)
         {
-            var a = await _dbSet.Where(course => course.UserId == userId).Include(x => x.Exams).ToListAsync();
+            var a = await _dbSet.Where(course => course.UserId == userId).Include(x => x.Exams).Include(x => x.Media).ToListAsync();
             return a; 
         }
 

@@ -3,6 +3,7 @@ using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastuctures;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services
 {
@@ -46,6 +47,17 @@ namespace BDRDExce.Infrastructures.Services
             await examService.UpdateAsync(exam);
 
             return new SubmissionDto{Content = submission.Content, ExamId = submission.ExamId, UserId = submission.UserId};
+        }
+
+        public override async Task<IEnumerable<Submission>> GetAllAsync()
+        {
+            var result = await _dbSet.Include(x => x.Medias).ToListAsync();
+            return result;
+        }
+        public override async Task<Submission> GetByIdAsync(object id)
+        {
+            var result =await _dbSet.Include(x => x.Medias).FirstOrDefaultAsync(x => x.Id == (int)id);
+            return result;
         }
     }
 }

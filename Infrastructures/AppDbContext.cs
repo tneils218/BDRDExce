@@ -71,7 +71,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                   .OnDelete(DeleteBehavior.Cascade);
  
             entity.HasOne(e => e.Exam)
-                  .WithMany()
+                  .WithMany(e => e.Submissions)
                   .HasForeignKey(e => e.ExamId)
                   .OnDelete(DeleteBehavior.Cascade);
  

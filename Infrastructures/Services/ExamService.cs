@@ -33,11 +33,24 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
 
     public async Task<IEnumerable<ExamDto>> GetAllExam()
     {
-        var exams = await _dbSet.Include(x => x.Medias).ToListAsync();
+        
+        var exams = await _dbSet
+        .Include(x => x.Medias)
+        .Include(c => c.Submissions)
+        .ThenInclude(s => s.Medias) // Đảm bảo bao gồm Medias trong Submissions
+        .ToListAsync();
+
         var examDto = exams.Select(e => {
-            var fileUrls = e.Medias.Select(u => u.FileUrl).ToList();
-            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, fileUrls);
-        });
+            var filesSubmission = e.Submissions
+                .SelectMany(u => u.Medias)
+                .ToList();
+            var filesExam = e.Medias.ToList();
+            var concat = filesExam.Concat(filesSubmission);
+
+            var files = concat.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+
+            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, files);
+        }).ToList();
         return examDto;
     }
 
@@ -48,10 +61,13 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
 
     public async Task<IEnumerable<ExamDto>> GetExamsByCourseId(int courseId)
     {
-        var exams = await _dbSet.Where(e => e.CourseId == courseId).ToListAsync();
+        var exams = await _dbSet.Where(e => e.CourseId == courseId).Include(e => e.Medias).Include(s => s.Submissions).ThenInclude(s => s.Medias).ToListAsync();
         var examDtos = exams.Select(x => {
-            var fileUrls = x.Medias.Select(u => u.FileUrl).ToList();
-            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete, fileUrls);
+            var filesSubmission = x.Submissions.SelectMany(s =>s.Medias).ToList();
+            var filesExam = x.Medias.ToList();
+            var filesConcat = filesSubmission.Concat(filesExam).ToList();
+            var files = filesConcat.Select(f => {return new FileDto(f.ContentName, f.FileUrl);}).ToList();
+            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete, files);
         });
         return examDtos;
     }

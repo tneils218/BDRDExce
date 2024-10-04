@@ -9,7 +9,7 @@ namespace BDRDExce.Models.DTOs
         public string Password { get; set; }
         public string PhoneNumber { get; set; }
         public string DOB { get; set; }
-        public string AvatarUrl { get; set; }
+        public FileDto File { get; set; }
         public string Token { get; set; }
         public string RefreshToken { get; set; }
         public long? Expires { get; set; }
@@ -20,25 +20,25 @@ namespace BDRDExce.Models.DTOs
 
         }
 
-        public UserDto(AppUser user, string role)
+        public UserDto(AppUser user, string role, FileDto file)
         {
             Id = user.Id;
             FullName = user.FullName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;
             DOB = user.DOB;
-            AvatarUrl = user.AvatarUrl;
+            File = file;
             Role = role;
         }
 
-        public UserDto(AppUser user, string token, string refreshToken, long expires, string role)
+        public UserDto(AppUser user, string token, string refreshToken, long expires, string role, FileDto file)
         {
             Id = user.Id;
             FullName = user.FullName;
             Email = user.Email;
             PhoneNumber = user.PhoneNumber;
             DOB = user.DOB;
-            AvatarUrl = user.AvatarUrl;
+            File = file;
             Token = token;
             RefreshToken = refreshToken;
             Expires = expires;

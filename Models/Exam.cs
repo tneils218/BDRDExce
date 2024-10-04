@@ -9,6 +9,7 @@ namespace BDRDExce.Models
         public Course Course { get; set; }
         public List<Media> Medias { get; set; }
         public List<Comment> Comments { get; set; }
+        public List<Submission> Submissions { get; set; }
         public bool IsComplete { get; set; }
     }
 }

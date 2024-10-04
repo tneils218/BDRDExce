@@ -1,4 +1,5 @@
 using BDRDExce.Infrastructures.Services.Interface;
+using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
