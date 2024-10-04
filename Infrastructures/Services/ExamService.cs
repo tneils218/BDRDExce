@@ -28,10 +28,10 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
         };
         await _dbSet.AddAsync(exam);
         await _context.SaveChangesAsync();
-        return new ExamDto(exam.Id, exam.Title, exam.Content, exam.CourseId, exam.IsComplete, null);
+        return new ExamDto(exam.Id, exam.Title, exam.Content, exam.CourseId, exam.IsComplete, null, null);
     }
 
-    public async Task<IEnumerable<ExamDto>> GetAllExam()
+    public async Task<IEnumerable<ExamDto>> GetAllExam(string userId)
     {
         
         var exams = await _dbSet
@@ -41,15 +41,12 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
         .ToListAsync();
 
         var examDto = exams.Select(e => {
-            var filesSubmission = e.Submissions
-                .SelectMany(u => u.Medias)
+            var filesSubmission = e.Submissions.Where(x => x.UserId == userId)
+                .SelectMany(u => u.Medias).Select(x => {return new FileDto(x.ContentName, x.FileUrl);})
                 .ToList();
-            var filesExam = e.Medias.ToList();
-            var concat = filesExam.Concat(filesSubmission);
+            var filesExam = e.Medias.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
 
-            var files = concat.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
-
-            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, files);
+            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, filesExam, filesSubmission);
         }).ToList();
         return examDto;
     }
@@ -59,15 +56,13 @@ public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), I
         return base.DeleteAsync(id);
     }
 
-    public async Task<IEnumerable<ExamDto>> GetExamsByCourseId(int courseId)
+    public async Task<IEnumerable<ExamDto>> GetExamsByCourseId(int courseId, string userId)
     {
         var exams = await _dbSet.Where(e => e.CourseId == courseId).Include(e => e.Medias).Include(s => s.Submissions).ThenInclude(s => s.Medias).ToListAsync();
         var examDtos = exams.Select(x => {
-            var filesSubmission = x.Submissions.SelectMany(s =>s.Medias).ToList();
-            var filesExam = x.Medias.ToList();
-            var filesConcat = filesSubmission.Concat(filesExam).ToList();
-            var files = filesConcat.Select(f => {return new FileDto(f.ContentName, f.FileUrl);}).ToList();
-            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete, files);
+            var filesSubmission = x.Submissions.Where(s => s.UserId == userId).SelectMany(s =>s.Medias).Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+            var filesExam = x.Medias.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete, filesExam, filesSubmission);
         });
         return examDtos;
     }

@@ -20,7 +20,7 @@ namespace BDRDExce.Controllers
             var courseDto = courses.Select(c => 
             {
                 var file = c.Media!= null ? new FileDto(c.Media.ContentName, c.Media.FileUrl) : new FileDto();
-                return new CourseDto { Id = c.Id, Title = c.Title, Desc = c.Desc, Label = c.Label, File = file, Exams = c.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null)).ToList() };
+                return new CourseDto { Id = c.Id, Title = c.Title, Desc = c.Desc, Label = c.Label, File = file, Exams = c.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null, null)).ToList() };
             });
             return Ok(courseDto);
         }
@@ -34,7 +34,7 @@ namespace BDRDExce.Controllers
                 return NotFound();
             }
             var file = course.Media != null ? new FileDto(course.Media.ContentName, course.Media.FileUrl) : new FileDto();
-            var courseDto = new CourseDto { Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, File = file, Exams = course.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null)).ToList() };
+            var courseDto = new CourseDto { Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, File = file, Exams = course.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null, null)).ToList() };
             return Ok(courseDto);
         }
 

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
@@ -14,7 +15,8 @@ public class ExamController(IExamService examService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExam()
     {
-        var result = await examService.GetAllExam();
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await examService.GetAllExam(userId);
         return Ok(result);
     }
 
@@ -28,7 +30,8 @@ public class ExamController(IExamService examService) : ControllerBase
     [HttpGet("courseId")]
     public async Task<ActionResult<IEnumerable<ExamDto>>> GetExamByCourseId(int courseId)
     {
-        var result = await examService.GetExamsByCourseId(courseId);
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await examService.GetExamsByCourseId(courseId, userId);
         return Ok(result);
     }
 

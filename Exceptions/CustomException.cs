@@ -5,8 +5,8 @@ namespace BDRDExce.Exceptions
     public class CustomException : Exception
     {
         // Custom properties
-        private string Code { get; set; }
-        private object Data { get; set; }
+        public string Code { get; set; }
+        public object Data { get; set; }
 
         // Constructor that sets a default error code
         public CustomException(string message) : base(message)

@@ -37,7 +37,7 @@ public class JwtHandler : JwtBearerHandler, IAuthenticationSignInHandler
         appUser.RefreshToken = refreshToken;
         appUser.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_refreshTokenValidityIndays);
         await _userManager.UpdateAsync(appUser);
-        var file = new FileDto(appUser.Media.ContentName, appUser.Media.FileUrl);
+        var file = appUser.Media != null ? new FileDto(appUser.Media.ContentName, appUser.Media.FileUrl) : new FileDto();
         var dto = new UserDto(appUser, tokenInfo.Token, refreshToken, new DateTimeOffset(tokenInfo.Expires).ToUnixTimeMilliseconds(), role.FirstOrDefault(), file);
         var response = new ResponseDto("Login successful!", dto);
         await Context.Response.WriteAsJsonAsync(response);
