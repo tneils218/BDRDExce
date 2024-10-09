@@ -1,76 +1,57 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
+using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace BDRDExce.Controllers
+namespace BDRDExce.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/v1/[controller]")]
+public class ExamController(IExamService examService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/v1/[controller]")]
-    public class ExamController : ControllerBase
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExam()
     {
-        private readonly IExamService _examService;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await examService.GetAllExam(userId);
+        return Ok(result);
+    }
 
-        public ExamController(IExamService examService)
-        {
-            _examService = examService;
-        }
+    [HttpPost]
+    public async Task<ActionResult<ExamDto>> AddExam(CreateExamDto createExamDto)
+    {
+        var result = await examService.AddExam(createExamDto, Request);
+        return Ok(result);
+    }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Exam>>> GetAllExams()
-        {
-            var exams = await _examService.GetAllAsync();
-            return Ok(exams);
-        }
+    [HttpGet("courseId")]
+    public async Task<ActionResult<IEnumerable<ExamDto>>> GetExamByCourseId(int courseId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await examService.GetExamsByCourseId(courseId, userId);
+        return Ok(result);
+    }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Exam>> GetExamById(int id)
-        {
-            var exam = await _examService.GetByIdAsync(id);
-            if (exam == null)
-            {
-                return NotFound();
-            }
-            return Ok(exam);
-        }
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteExam(int id)
+    {
+        await examService.DeleteAsync(id);
+        return Ok();
+    }
 
-        [HttpPost]
-        public async Task<ActionResult<Exam>> CreateExam(Exam exam)
-        {
-            var createdExam = await _examService.AddAsync(exam);
-            return CreatedAtAction(nameof(GetExamById), new { id = createdExam.Id }, createdExam);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateExam(int id, Exam exam)
-        {
-            if (id != exam.Id)
-            {
-                return BadRequest();
-            }
-
-            try
-            {
-                var updatedExam = await _examService.UpdateAsync(exam);
-                return Ok(updatedExam);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteExam(int id)
-        {
-            try
-            {
-                await _examService.DeleteAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-        }
+    [HttpPut]
+    public async Task<ActionResult> EditExam(ChangeExamDto examDto)
+    {
+        var exam = new Exam {
+            Id = examDto.id,
+            Content = examDto.Content,
+            Title = examDto.Title,
+            CourseId = examDto.CourseId
+        };
+        var result = await examService.UpdateAsync(exam);
+        return Ok(result);
     }
 }

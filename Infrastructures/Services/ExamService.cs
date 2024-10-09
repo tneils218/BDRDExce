@@ -1,67 +1,86 @@
+using BDRDExce.Commons;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastuctures;
 using BDRDExce.Models;
+using BDRDExce.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 
-namespace BDRDExce.Infrastructures.Services
+namespace BDRDExce.Infrastructures.Services;
+
+public class ExamService(AppDbContext context) : BaseDbService<Exam>(context), IExamService
 {
-    public class ExamService : BaseDbService<Exam>, IExamService
+
+    public async Task<ExamDto> AddExam(CreateExamDto createExamDto, HttpRequest request)
     {
-        public ExamService(AppDbContext context) : base(context)
+        var medias =new List<Media>();
+        if(createExamDto.Files != null && createExamDto.Files.Any())
         {
-        }
-        public override async Task<IEnumerable<Exam>> GetAllAsync()
-        {
-            return await _dbSet.ToListAsync();
-        }
-
-        public override async Task<Exam> GetByIdAsync(object id)
-        {
-            return await base.GetByIdAsync(id);
-        }
-
-        public override async Task<Exam> AddAsync(Exam exam)
-        {
-            exam.CreatedAt = DateTime.UtcNow;
-            return await base.AddAsync(exam);
-        }
-
-        public override async Task<Exam> UpdateAsync(Exam exam)
-        {
-            var existingExam = await GetByIdAsync(exam.Id);
-            if (existingExam == null)
+            foreach(var file in createExamDto.Files)
             {
-                throw new KeyNotFoundException("Exam not found.");
+                var media = await Utils.ProcessUploadedFile(file, request);
+                if(media != null)
+                    medias.Add(media);
             }
-
-            existingExam.Title = exam.Title;
-            existingExam.Content = exam.Content;
-            existingExam.UserId = exam.UserId;
-
-            return await base.UpdateAsync(existingExam);
         }
+        var exam = new Exam{
+            CourseId = createExamDto.CourseId,
+            Content = createExamDto.Content,
+            Title = createExamDto.Title,
+            Medias = medias,
+            IsComplete = false
+        };
+        await _dbSet.AddAsync(exam);
+        await _context.SaveChangesAsync();
+        return new ExamDto(exam.Id, exam.Title, exam.Content, exam.CourseId, exam.IsComplete, null, null);
+    }
 
-        public override async Task DeleteAsync(object id)
+    public async Task<IEnumerable<ExamDto>> GetAllExam(string userId)
+    {
+        
+        var exams = await _dbSet
+        .Include(x => x.Medias)
+        .Include(c => c.Submissions)
+        .ThenInclude(s => s.Medias) // Đảm bảo bao gồm Medias trong Submissions
+        .ToListAsync();
+
+        var examDto = exams.Select(e => {
+            var filesSubmission = e.Submissions.Where(x => x.UserId == userId)
+                .SelectMany(u => u.Medias).Select(x => {return new FileDto(x.ContentName, x.FileUrl);})
+                .ToList();
+            var filesExam = e.Medias.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+
+            return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, filesExam, filesSubmission);
+        }).ToList();
+        return examDto;
+    }
+
+    public override Task DeleteAsync(object id)
+    {
+        return base.DeleteAsync(id);
+    }
+
+    public async Task<IEnumerable<ExamDto>> GetExamsByCourseId(int courseId, string userId)
+    {
+        var exams = await _dbSet.Where(e => e.CourseId == courseId).Include(e => e.Medias).Include(s => s.Submissions).ThenInclude(s => s.Medias).ToListAsync();
+        var examDtos = exams.Select(x => {
+            var filesSubmission = x.Submissions.Where(s => s.UserId == userId).SelectMany(s =>s.Medias).Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+            var filesExam = x.Medias.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+            return new ExamDto(x.Id, x.Title, x.Content, x.CourseId, x.IsComplete, filesExam, filesSubmission);
+        });
+        return examDtos;
+    }
+
+    public override async Task<Exam> UpdateAsync(Exam entity)
+    {
+        var exam = await _dbSet.FindAsync(entity.Id);
+        if(exam != null)
         {
-            var exam = await GetByIdAsync(id);
-            if (exam == null)
-            {
-                throw new KeyNotFoundException("Exam not found.");
-            }
-
-            await base.DeleteAsync(exam);
+            exam.Content = entity.Content;
+            exam.Title = entity.Title;
+            exam.CourseId = entity.CourseId;
+            exam.IsComplete = entity.IsComplete;
+            return await base.UpdateAsync(exam);
         }
-
-        public override async Task DeleteAsync(Exam exam)
-        {
-            await base.DeleteAsync(exam);
-        }
-
-        // Implement any additional methods declared in IExamService
-        public async Task<IEnumerable<Exam>> GetExamsByUserIdAsync(string userId)
-        {
-            // Custom logic to retrieve exams by user ID
-            return await _dbSet.Where(exam => exam.UserId == userId).ToListAsync();
-        }
+        return null;
     }
 }

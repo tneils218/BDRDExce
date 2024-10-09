@@ -1,27 +1,22 @@
 using BDRDExce.Infrastructures.Services.Interface;
-using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BDRDExce.Controllers;
 
+[Authorize]
 [Route("api/v1/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public class UserController(IUserService userService) : ControllerBase
 {
-    private readonly IUserService _userService;
-
-    public UserController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
         try
         {
-            var users = await _userService.GetUsersAsync();
+            var userEmail = User.Identity.Name;
+            var users = await userService.GetUsersAsync();
             return Ok(users);
         }
         catch (Exception ex)
@@ -33,7 +28,7 @@ public class UserController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(string id)
     {
-        var user = await _userService.GetUserByIdAsync(id);
+        var user = await userService.GetUserByIdAsync(id);
         if (user == null)
         {
             return NotFound();
@@ -42,11 +37,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(string id, UserDto updatedUser)
+    public async Task<IActionResult> UpdateUser(string id, UpdateUserDto updatedUser)
     {
         try
         {
-            var result = await _userService.UpdateUserAsync(id, updatedUser);
+            var result = await userService.UpdateUserAsync(id, updatedUser, Request);
             if (result.Succeeded)
             {
                 return Ok(updatedUser);
@@ -64,7 +59,7 @@ public class UserController : ControllerBase
     {
         try
         {
-            var result = await _userService.DeleteUserAsync(id);
+            var result = await userService.DeleteUserAsync(id);
             if (result.Succeeded)
             {
                 return Ok(new { Message = "User deleted successfully" });
@@ -75,17 +70,5 @@ public class UserController : ControllerBase
         {
             return NotFound(new { Message = ex.Message });
         }
-    }
-
-    [HttpPost("create")]
-    public async Task<IActionResult> CreateUser(UserDto userDto)
-    {
-        var result = await _userService.CreateUserAsync(userDto);
-        if (result.Succeeded)
-        {
-            return Ok(userDto);
-        }
-
-        return BadRequest(result.Errors);
     }
 }
