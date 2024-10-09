@@ -1,8 +1,8 @@
+using BDRDExce.Commons;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BDRDExce.Infrastructures.Services;
@@ -42,20 +42,7 @@ public class UserService(UserManager<AppUser> userManager) : IUserService
         Media media = null;
         if(userDto.File != null)
         {
-            using (var ms = new MemoryStream())
-            {
-                await userDto.File.CopyToAsync(ms);
-                var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
-                var idMedia = Guid.NewGuid().ToString();
-                media = new Media
-                {
-                    Id = idMedia,
-                    ContentType = userDto.File.ContentType,
-                    ContentName = userDto.File.FileName,
-                    Content = fileBytes,
-                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{idMedia}"
-                };
-            }
+            media = await Utils.ProcessUploadedFile(userDto.File, request);
         }
         user.FullName = userDto.FullName ?? user.FullName;
         user.PhoneNumber = userDto.PhoneNumber ?? user.PhoneNumber;

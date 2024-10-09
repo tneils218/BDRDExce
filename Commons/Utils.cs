@@ -2,9 +2,11 @@ namespace BDRDExce.Commons;
 
 using System.Security.Cryptography;
 using System.Text;
+using BDRDExce.Models;
 
 public static class Utils {
-
+    private static string[] _allowedContentTypes = {"image/jpeg", "image/png", "application/x-zip-compressed", "application/x-rar-compressed"};
+    private const int _maxFileSize = 10 * 1024 * 1024;
     public static string Decrypt(string cipherText, string key)
         {
             byte[] fullCipher = Convert.FromBase64String(cipherText);
@@ -40,4 +42,26 @@ public static class Utils {
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
+    public static async Task<Media> ProcessUploadedFile(IFormFile file, HttpRequest request)
+    {
+        if(file.Length > 0 && file.Length <= _maxFileSize && _allowedContentTypes.Contains(file.ContentType))
+        {
+            using(var ms = new MemoryStream())
+            {
+                await file.CopyToAsync(ms);
+                var fileBytes = ms.ToArray();
+                var id = Guid.NewGuid().ToString();
+                var media = new Media
+                {
+                    Id = id,
+                    ContentType = file.ContentType,
+                    ContentName = file.FileName,
+                    Content = fileBytes,
+                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
+                };
+                return media;
+            }
+        }
+        return null;
+    }
 }                      

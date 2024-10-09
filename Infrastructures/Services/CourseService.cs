@@ -1,4 +1,4 @@
-using System.Reflection.Metadata.Ecma335;
+using BDRDExce.Commons;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastuctures;
 using BDRDExce.Models;
@@ -17,7 +17,11 @@ namespace BDRDExce.Infrastructures.Services
 
         public override async Task<Course> GetByIdAsync(object id)
         {
-            var result = await _dbSet.Include(x => x.Exams).Include(x => x.Media).FirstOrDefaultAsync(x => x.Id == (int)id);
+            var result = await _dbSet
+            .Include(x => x.Exams).ThenInclude(x => x.Medias)
+            .Include(x => x.Exams).ThenInclude(x => x.Submissions).ThenInclude(x => x.Medias)
+            .Include(x => x.Media)
+            .FirstOrDefaultAsync(x => x.Id == (int)id);
             return result;
         }
 
@@ -57,30 +61,46 @@ namespace BDRDExce.Infrastructures.Services
             await base.DeleteAsync(course);
         }
 
-        public async Task<IEnumerable<Course>> GetCoursesByUserIdAsync(string userId)
+        public async Task<IEnumerable<CourseDto>> GetCoursesByUserIdAsync(string userId)
         {
-            var a = await _dbSet.Where(course => course.UserId == userId).Include(x => x.Exams).Include(x => x.Media).ToListAsync();
-            return a; 
+            var courses = await _dbSet.Where(course => course.UserId == userId)
+            .Include(x => x.Exams)
+            .ThenInclude(x => x.Medias)
+            .Include(x => x.Exams)
+            .ThenInclude(x => x.Submissions).ThenInclude(x => x.Medias)
+            .Include(x => x.Media)
+            .ToListAsync();
+            var courseDto = courses.Select(c => 
+            {
+                var file = c.Media!= null ? new FileDto(c.Media.ContentName, c.Media.FileUrl) : new FileDto();
+
+                return new CourseDto { 
+                    Id = c.Id, 
+                    Title =
+                    c.Title,
+                    Desc = c.Desc,
+                    Label = c.Label, 
+                    File = file, 
+                    Exams = c.Exams.Select(e =>
+                    {
+                        var filesSubmission = e.Submissions.Where(x => x.UserId == userId)
+                        .SelectMany(u => u.Medias).Select(x => {return new FileDto(x.ContentName, x.FileUrl);})
+                        .ToList();
+                        var filesExam = e.Medias.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+
+                        return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, filesExam, filesSubmission);
+                    }).ToList() };
+            });
+            return courseDto; 
         }
 
         public async Task<CourseDto> AddCourse(CreateCourseDto courseDto, HttpRequest request)
         {
             Media media = null;
-            using (var ms = new MemoryStream())
+            if(courseDto.Image != null)
             {
-                await courseDto.Image.CopyToAsync(ms);
-                var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
-                var id = Guid.NewGuid().ToString();
-                media = new Media
-                {
-                    Id = id,
-                    ContentType = courseDto.Image.ContentType,
-                    ContentName = courseDto.Image.FileName,
-                    Content = fileBytes,
-                    FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                };
+                media = await Utils.ProcessUploadedFile(courseDto.Image, request);
             }
-            
             var course = new Course
             {
                 Desc = courseDto.Desc,
@@ -88,7 +108,7 @@ namespace BDRDExce.Infrastructures.Services
                 UserId = courseDto.UserId,
                 CreatedAt = DateTime.UtcNow,
                 Media = media,
-                ImageUrl = media.FileUrl,
+                ImageUrl = media != null ? media.FileUrl : null,
                 Label = courseDto.Label
             };
             await _dbSet.AddAsync(course);
@@ -106,25 +126,12 @@ namespace BDRDExce.Infrastructures.Services
             Media media = null;
             if(courseDto.Image != null)
             {
-                using(var ms = new MemoryStream())
-                {
-                    await courseDto.Image.CopyToAsync(ms);
-                    var fileBytes = ms.ToArray(); // Chuyển thành mảng byte
-                    var id = Guid.NewGuid().ToString();
-                    media = new Media
-                    {
-                        Id = id,
-                        ContentType = courseDto.Image.ContentType,
-                        ContentName = courseDto.Image.FileName,
-                        Content = fileBytes,
-                        FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                    };
-                }
+                media = await Utils.ProcessUploadedFile(courseDto.Image, request);
             }
             course.Desc = courseDto.Desc ?? course.Desc;
             course.Title = courseDto.Title ?? course.Title;
             course.Label = courseDto.Label ?? course.Label;
-            course.Media = media;
+            course.Media = media ?? course.Media;
             course.ImageUrl = media != null ? media.FileUrl : course.ImageUrl;
             _dbSet.Update(course);
             await _context.SaveChangesAsync();

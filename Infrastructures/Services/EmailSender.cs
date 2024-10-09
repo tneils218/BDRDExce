@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using BDRDExce.Infrastructures.Services.Interface;
 using MailKit.Net.Smtp;
 using MailKit.Security;

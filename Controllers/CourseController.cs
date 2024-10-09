@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using BDRDExce.Infrastructures.Services.Interface;
-using BDRDExce.Models;
 using BDRDExce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -17,12 +16,7 @@ namespace BDRDExce.Controllers
         {
             var idUser = userId == null ? User.FindFirst(ClaimTypes.NameIdentifier)?.Value : userId;
             var courses = await courseService.GetCoursesByUserIdAsync(idUser);
-            var courseDto = courses.Select(c => 
-            {
-                var file = c.Media!= null ? new FileDto(c.Media.ContentName, c.Media.FileUrl) : new FileDto();
-                return new CourseDto { Id = c.Id, Title = c.Title, Desc = c.Desc, Label = c.Label, File = file, Exams = c.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null, null)).ToList() };
-            });
-            return Ok(courseDto);
+            return Ok(courses);
         }
 
         [HttpGet("{id}")]
@@ -34,7 +28,21 @@ namespace BDRDExce.Controllers
                 return NotFound();
             }
             var file = course.Media != null ? new FileDto(course.Media.ContentName, course.Media.FileUrl) : new FileDto();
-            var courseDto = new CourseDto { Id = course.Id, Title = course.Title, Desc = course.Desc, Label = course.Label, File = file, Exams = course.Exams.Select(e => new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null, null)).ToList() };
+            var courseDto = new CourseDto {
+                 Id = course.Id, 
+                 Title = course.Title, 
+                 Desc = course.Desc,
+                 Label = course.Label,
+                 File = file, 
+                 Exams = course.Exams.Select(e => 
+                 {
+                    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    var filesSubmission = e.Submissions.Where(x => x.UserId == userId)
+                        .SelectMany(u => u.Medias).Select(x => {return new FileDto(x.ContentName, x.FileUrl);})
+                        .ToList();
+                        var filesExam = e.Medias.Select(x => {return new FileDto(x.ContentName, x.FileUrl);}).ToList();
+                    return new ExamDto(e.Id, e.Title, e.Content, e.CourseId, e.IsComplete, null, null);
+                 }).ToList()};
             return Ok(courseDto);
         }
 

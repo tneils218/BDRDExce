@@ -1,4 +1,4 @@
-using System.Linq.Expressions;
+using BDRDExce.Commons;
 using BDRDExce.Infrastructures.Services.Interface;
 using BDRDExce.Infrastuctures;
 using BDRDExce.Models;
@@ -24,21 +24,8 @@ namespace BDRDExce.Infrastructures.Services
             }
             if(submissionDto.File != null)
             {
-                using(var ms = new MemoryStream())
-                {
-                    await submissionDto.File.CopyToAsync(ms);
-                    var fileByte = ms.ToArray();
-                    var id = Guid.NewGuid().ToString();
-                    var media = new Media
-                    {
-                        Id = id,
-                        ContentType = submissionDto.File.ContentType,
-                        ContentName = submissionDto.File.FileName,
-                        Content = fileByte,
-                        FileUrl = $"{request.Scheme}://{request.Host}/api/v1/Media/{id}"
-                    };
-                    medias.Add(media);
-                }
+                var media = await Utils.ProcessUploadedFile(submissionDto.File, request);
+                medias.Add(media);
             }
             submission.Medias = medias;
             await AddAsync(submission);
